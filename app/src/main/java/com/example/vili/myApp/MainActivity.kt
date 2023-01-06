@@ -1,4 +1,4 @@
-package com.example.vili
+package com.example.vili.myApp
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,34 +10,29 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.vili.ui.theme.VILITheme
+import androidx.navigation.compose.rememberNavController
+import com.example.vili.myApp.theme.VILITheme
+import viliApp.NavigationHost
+import viliApp.getDeviceConfig
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            VILITheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    Greeting("Android")
+
+                MainFun()
+
+
                 }
-            }
+
         }
-    }
+
 }
 
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun DefaultPreview() {
-    VILITheme {
-        Greeting("Android")
-    }
+fun MainFun(){
+    val navController = rememberNavController()
+    NavigationHost(navController = navController)
 }

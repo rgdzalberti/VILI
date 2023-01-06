@@ -1,4 +1,4 @@
-package com.example.vili.ui.theme
+package com.example.vili.myApp.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
