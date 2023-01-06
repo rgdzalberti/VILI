@@ -26,6 +26,14 @@ class DeviceConfig(){
             screenWidth = width
         }
 
+        fun returnHeight():Dp{
+            return screenHeight
+        }
+
+        fun returnWidth():Dp{
+            return screenWidth
+        }
+
         fun heightPercentage(targetPercentage : Int): Dp {
             return ((targetPercentage * screenHeight.toString().substringBefore('.').toInt())/100).dp
         }
