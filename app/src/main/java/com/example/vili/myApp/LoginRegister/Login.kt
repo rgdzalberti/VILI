@@ -3,6 +3,9 @@ package viliApp
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.InteractionSource
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
@@ -41,15 +44,18 @@ fun PreviewLoginScreen() {
     loginScreen(rememberNavController())
 }
 
-var isLogging = mutableStateOf(true)
+//var isLogging = mutableStateOf(true)
 
 @Composable
 fun loginScreen(navController: NavController) {
 
 
+    var isLogging by remember {mutableStateOf(true) }
+
     //Llamo a mi funcion que cambia el color de la barra y la función que obtiene los dp de la pantalla
     systemBarColor(color = Color(0xFF0A0A0A))
     getDeviceConfig()
+
 
     //Everything Container
     Column(
@@ -59,27 +65,10 @@ fun loginScreen(navController: NavController) {
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(Color(0xFF0A0A0A), Color(0xFF181717)),
-
-                    /*
-                    start = Offset(0f, 0f), // top left corner
-                    end = Offset(
-                        returnHeight()
-                            .toString()
-                            .substringBefore('.')
-                            .toFloat(),
-                        returnWidth()
-                            .toString()
-                            .substringBefore('.')
-                            .toFloat()
-                    ) // bottom right corner
-
-                     */
                 )
             ), horizontalAlignment = Alignment.CenterHorizontally
 
     ) {
-
-
         //LOGO
         Column(
             modifier = Modifier
@@ -106,7 +95,7 @@ fun loginScreen(navController: NavController) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                loginFields()
+                loginFields(isLogging,{isLogging = !isLogging})
 
 
             }
@@ -128,12 +117,12 @@ fun logo() {
 }
 
 @Composable
-fun loginFields() {
+fun loginFields(isLogging: Boolean, toggleLogin: () -> Unit) {
     EmailTextField()
     PasswordTextField()
     Spacer(Modifier.height(heightPercentage(1)))
-    validateButton()
-    clickableText()
+    validateButton(isLogging)
+    ClickableText(isLogging,toggleLogin)
 }
 
 
@@ -241,23 +230,21 @@ fun PasswordTextField() {
 }
 
 @Composable
-fun validateButton() {
+fun validateButton(isLogging: Boolean) {
+
 
     Button(
-        onClick = {
-            isLogging.value = !isLogging.value
-
-            Log.d("fire", isLogging.value.toString())
-
-        }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+        onClick = {if (isLogging) {credentials.tryConnection()}
+        else credentials.register()},
+        colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
     ) {
+
         Text(
-            text = (
-                    if (isLogging.value) {
-                        "Iniciar Sesión"
-                    } else {
-                        "Registrar"
-                    }),
+            text = (if (isLogging) {
+                "Iniciar Sesión"
+            } else {
+                "Registrar"
+            }),
             color = Color.Black
         )
     }
@@ -265,20 +252,15 @@ fun validateButton() {
 
 
 @Composable
-fun clickableText() {
-
-
-    ClickableText(
+fun ClickableText(isLogging: Boolean, toggleLogin: () -> Unit ) {
+    Text(
         text = AnnotatedString(
-            if (isLogging.value) {
+            if (isLogging) {
                 "¿No tienes cuenta? Registrate"
             } else "¿Ya tienes cuenta? Inicia Sesión"
         ),
         style = TextStyle(color = Color.White, textDecoration = TextDecoration.Underline),
-        onClick = {
-            isLogging.value = !isLogging.value
-        }
-
+        modifier = Modifier.clickable(onClick = { toggleLogin()})
     )
 }
 
