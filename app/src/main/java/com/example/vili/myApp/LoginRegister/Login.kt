@@ -1,60 +1,51 @@
 package viliApp
 
-import android.graphics.drawable.VectorDrawable
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
-import androidx.compose.ui.tooling.preview.Device
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.vili.R
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import org.w3c.dom.Text
 import viliApp.DeviceConfig.Companion.heightPercentage
-import viliApp.DeviceConfig.Companion.returnHeight
-import viliApp.DeviceConfig.Companion.returnWidth
-
 
 @Preview
 @Composable
-fun Preview() {
+fun PreviewLoginScreen() {
     loginScreen(rememberNavController())
 }
 
+var isLogging = mutableStateOf(true)
+
 @Composable
 fun loginScreen(navController: NavController) {
+
 
     //Llamo a mi funcion que cambia el color de la barra y la función que obtiene los dp de la pantalla
     systemBarColor(color = Color(0xFF0A0A0A))
@@ -102,7 +93,7 @@ fun loginScreen(navController: NavController) {
 
         Column(
             Modifier
-                .height(200.dp)
+                .height(220.dp)
                 .width(330.dp)
                 .clip(RoundedCornerShape(14.dp))
                 .background(Color(0xFF1A1919)),
@@ -117,7 +108,9 @@ fun loginScreen(navController: NavController) {
             ) {
                 loginFields()
 
+
             }
+
         }
 
 
@@ -138,7 +131,9 @@ fun logo() {
 fun loginFields() {
     EmailTextField()
     PasswordTextField()
-    //loginWithGoogle()
+    Spacer(Modifier.height(heightPercentage(1)))
+    validateButton()
+    clickableText()
 }
 
 
@@ -171,6 +166,7 @@ fun EmailTextField() {
             //trailingIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = null) },
             onValueChange = {
                 text = it
+                credentials.email = it.text
             },
             label = { Text(text = "Introduce tu e-mail", color = Color.White) },
             placeholder = { Text(text = "Introduce tu e-mail", color = Color.White) },
@@ -209,6 +205,7 @@ fun PasswordTextField() {
             ),
             onValueChange = {
                 password = it
+                credentials.password = it
 
             },
             leadingIcon = {
@@ -242,6 +239,72 @@ fun PasswordTextField() {
         )
     }
 }
+
+@Composable
+fun validateButton() {
+
+    Button(
+        onClick = {
+            isLogging.value = !isLogging.value
+
+            Log.d("fire", isLogging.value.toString())
+
+        }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+    ) {
+        Text(
+            text = (
+                    if (isLogging.value) {
+                        "Iniciar Sesión"
+                    } else {
+                        "Registrar"
+                    }),
+            color = Color.Black
+        )
+    }
+}
+
+
+@Composable
+fun clickableText() {
+
+
+    ClickableText(
+        text = AnnotatedString(
+            if (isLogging.value) {
+                "¿No tienes cuenta? Registrate"
+            } else "¿Ya tienes cuenta? Inicia Sesión"
+        ),
+        style = TextStyle(color = Color.White, textDecoration = TextDecoration.Underline),
+        onClick = {
+            isLogging.value = !isLogging.value
+        }
+
+    )
+}
+
+class credentials() {
+
+    companion object {
+
+        var email by mutableStateOf("")
+        var password by mutableStateOf("")
+
+        fun tryConnection() {
+            userCredentials.tryConnection(email, password)
+            //si devuelve valid cambiar pantalla
+        }
+
+        fun register() {
+            userCredentials.registerCredentials(email, password)
+        }
+
+
+    }
+
+}
+
+
+
 
 
 
