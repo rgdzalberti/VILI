@@ -1,11 +1,13 @@
 plugins {
     id 'com.android.application'
+    id 'com.chaquo.python'
     id 'org.jetbrains.kotlin.android'
 }
 
 android {
     namespace 'com.example.vili'
     compileSdk 33
+
 
     defaultConfig {
         applicationId "com.example.vili"
@@ -18,6 +20,29 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+
+        python {
+            version "3.8"
+            buildPython "C:/Users/Ricar/AppData/Local/Programs/Python/Python38-32/python.exe"
+            //buildPython "C:/Users/Ricar/AppData/Local/Programs/Python/Python38-32/python.exe", "-3.8"
+
+
+            pip{
+                //install "howlongtobeatpy"
+            }
+
+
+        }
+
+        sourceSets {
+            main {
+                python.srcDir "src/main/python"
+            }
+        }
+
     }
 
     buildTypes {
@@ -66,6 +91,7 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-test-manifest"
 
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.28.0"
+    implementation 'io.github.husnjak:igdb-api-jvm:1.0.8'
 
     //Navigation
     def nav_version = "2.5.3"
