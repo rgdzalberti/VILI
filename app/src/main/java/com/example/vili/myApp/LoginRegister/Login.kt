@@ -120,7 +120,7 @@ fun logo() {
 
     val image: Painter = painterResource(id = R.drawable.logovilipng)
 
-    Image(painter = image, contentDescription = "logo")
+    Image(painter = image, contentDescription = "logo") //TODO animar logo con keyframes quiza spring linear fading
 
 
 }

@@ -49,7 +49,7 @@ fun myGameList(){
     //Container de la lista
     Column(
         Modifier
-            .height(DeviceConfig.heightPercentage(80))
+            .height(DeviceConfig.heightPercentage(30))
             .fillMaxWidth()
             .background(Color.White), horizontalAlignment = Alignment.CenterHorizontally) {
 
@@ -123,10 +123,6 @@ fun entradaContainer() {
 
             }
 
-
-
-
-            //Container Estrella
         }
 
     }
@@ -141,6 +137,7 @@ fun entradaContainer() {
                         size.first,
                         100
                     )
+
                 ) //Calculo el espacio relativo al padre  en % para que se vea igual en todos los dispositivos
                 .width(DeviceConfig.widthPercentage(20))
                 .clip(RoundedCornerShape(20.dp))
@@ -149,7 +146,7 @@ fun entradaContainer() {
             verticalArrangement = Arrangement.Center
         ) {
             Text(text = "a")
-            //Image TODO
+            //Image TODO con modifier clickable para q te lleve a otro menu
         }
     }
 
