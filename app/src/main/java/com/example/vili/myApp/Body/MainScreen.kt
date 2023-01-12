@@ -46,35 +46,39 @@ fun mainScreen(){
 
 @Composable
 fun BottomBar() {
-    val selectedIndex = remember { mutableStateOf(0) }
-    BottomNavigation(elevation = 10.dp) {
+    val selectedIndex = remember { mutableStateOf(1) }
+    BottomNavigation(elevation = 10.dp, backgroundColor = Color.Black) {
+
+        BottomNavigationItem(icon = {
+            Icon(imageVector = Icons.Default.Home,"") //TODO cambiar iconos
+        },
+            selected = (selectedIndex.value == 0),
+            onClick = {
+                selectedIndex.value = 0
+            },
+            selectedContentColor = Color.Red,
+            unselectedContentColor = Color.White
+        )
 
         BottomNavigationItem(icon = {
             Icon(imageVector = Icons.Default.Home,"")
         },
-            label = { Text(text = "Home") },
-            selected = (selectedIndex.value == 0),
-            onClick = {
-                selectedIndex.value = 0
-            })
-
-        BottomNavigationItem(icon = {
-            Icon(imageVector = Icons.Default.Favorite,"")
-        },
-            label = { Text(text = "Favorite") },
             selected = (selectedIndex.value == 1),
             onClick = {
                 selectedIndex.value = 1
-            })
+            },
+            selectedContentColor = Color.Red,
+            unselectedContentColor = Color.White)
 
         BottomNavigationItem(icon = {
             Icon(imageVector = Icons.Default.Person,"")
         },
-            label = { Text(text = "Profile") },
             selected = (selectedIndex.value == 2),
             onClick = {
                 selectedIndex.value = 2
-            })
+            },
+            selectedContentColor = Color.Red,
+            unselectedContentColor = Color.White)
     }
 }
 
