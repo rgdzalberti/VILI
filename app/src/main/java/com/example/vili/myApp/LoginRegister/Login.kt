@@ -88,8 +88,8 @@ fun loginScreen(navController: NavController) {
             Modifier
                 .height(
                     if (isLogging) {
-                        220.dp
-                    } else 280.dp
+                        250.dp
+                    } else 310.dp
                 )
                 .width(330.dp)
                 .clip(RoundedCornerShape(14.dp))
@@ -133,7 +133,7 @@ fun loginFields(isLogging: Boolean, toggleLogin: () -> Unit) {
     if (!isLogging) {
         ConfirmPasswordTextField()
     }
-    Spacer(Modifier.height(heightPercentage(1)))
+    Spacer(Modifier.height(heightPercentage(3)))
     validateButton(isLogging)
     ClickableText(isLogging, toggleLogin)
 
