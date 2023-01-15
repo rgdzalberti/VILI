@@ -28,11 +28,12 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.vili.R
@@ -49,7 +50,7 @@ fun PreviewLoginScreen() {
 //var isLogging = mutableStateOf(true)
 
 @Composable
-fun loginScreen(navController: NavController) {
+fun loginScreen(navController: NavController, viewModel: LoginViewModel = hiltViewModel()) {
 
     var isLogging by remember { mutableStateOf(true) }
 
@@ -83,10 +84,6 @@ fun loginScreen(navController: NavController) {
             logo()
         }
 
-
-
-
-
         Column(
             Modifier
                 .height(
@@ -106,7 +103,17 @@ fun loginScreen(navController: NavController) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                loginFields(isLogging, { isLogging = !isLogging })
+
+                ////////////////
+
+                loginFields(isLogging, { isLogging = !isLogging },viewModel.email,viewModel.password,viewModel.repeatPassword,viewModel::onEmailChange,viewModel::onPasswordChange,viewModel::onRepeatPasswordChange, viewModel::onLogInClick, viewModel::onSignUp)
+
+
+                if (viewModel.toastID != -1){
+                    showToast(viewModel.toastID,isLogging)
+                    viewModel.disableToast()
+                }
+
 
 
             }
@@ -117,6 +124,35 @@ fun loginScreen(navController: NavController) {
     }
 
 }
+
+
+@Composable
+fun showToast(toastID: Int,isLogging: Boolean){
+
+    //Un toast con más información
+    var toastMes = ""
+
+    if (isLogging){
+        when(toastID){
+
+            0 -> toastMes = "Sesión Iniciada"
+            1 -> toastMes = "Hay algún campo vacío"
+            2 -> toastMes = "El formato del correo es incorrecto"
+            3 -> toastMes = "El usuario no existe"
+        }
+    }
+    else
+        when(toastID){
+            0 -> toastMes = "Registrado con éxito"
+            1 -> toastMes = "No dejes campos vacíos"
+            2 -> toastMes = "El formato del email es incorrecto"
+            3 -> toastMes = "Las contraseñas no coinciden"
+        }
+
+    Toast.makeText(LocalContext.current, toastMes, Toast.LENGTH_SHORT).show()
+}
+
+
 
 @Composable
 fun logo() {
@@ -130,14 +166,14 @@ fun logo() {
 
 
 @Composable
-fun loginFields(isLogging: Boolean, toggleLogin: () -> Unit) {
-    EmailTextField()
-    PasswordTextField()
+fun loginFields(isLogging: Boolean, toggleLogin: () -> Unit, email:String, password:String, repeatPassword:String, onEmailChange: (String) -> Unit,onPasswordChange: (String) -> Unit,onRepeatPasswordChange: (String) -> Unit,onLogin: () -> Unit,onSignUp: () -> Unit) {
+    EmailTextField(email,onEmailChange)
+    PasswordTextField(password,onPasswordChange)
     if (!isLogging) {
-        ConfirmPasswordTextField()
+        ConfirmPasswordTextField(repeatPassword,onRepeatPasswordChange)
     }
     Spacer(Modifier.height(heightPercentage(3)))
-    validateButton(isLogging)
+    validateButton(isLogging,onLogin,onSignUp)
     ClickableText(isLogging, toggleLogin)
 
 
@@ -145,12 +181,12 @@ fun loginFields(isLogging: Boolean, toggleLogin: () -> Unit) {
 
 
 @Composable
-fun EmailTextField() {
-    var text by remember { mutableStateOf(TextFieldValue("")) }
+fun EmailTextField(uiState: String, onValueChange: (String) -> Unit) {
+
     Column()
     {
         OutlinedTextField(
-            value = text,
+            value = uiState,
             maxLines = 1,
             modifier = Modifier.padding(horizontal = 25.dp),
             singleLine = true,
@@ -171,10 +207,7 @@ fun EmailTextField() {
                 )
             },
             //trailingIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = null) },
-            onValueChange = {
-                text = it
-                credentials.email = it.text
-            },
+            onValueChange = onValueChange,
             label = { Text(text = "Introduce tu e-mail", color = Color.White) },
             placeholder = { Text(text = "Introduce tu e-mail", color = Color.White) },
 
@@ -185,7 +218,7 @@ fun EmailTextField() {
 
 
 @Composable
-fun PasswordTextField() {
+fun PasswordTextField(uiState: String, onValueChange: (String) -> Unit) {
     Column(
         modifier = Modifier.padding(horizontal = 25.dp),
 
@@ -201,7 +234,7 @@ fun PasswordTextField() {
             painterResource(id = R.drawable.hide)
 
         OutlinedTextField(
-            value = password,
+            value = uiState,
             maxLines = 1,
             singleLine = true,
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -211,8 +244,7 @@ fun PasswordTextField() {
                 unfocusedBorderColor = Color.White
             ),
             onValueChange = {
-                password = it
-                credentials.password = it
+                onValueChange(it)
             },
             leadingIcon = {
                 Icon(
@@ -247,7 +279,7 @@ fun PasswordTextField() {
 }
 
 @Composable
-fun ConfirmPasswordTextField() {
+fun ConfirmPasswordTextField(uiState: String, onValueChange: (String) -> Unit) {
     Column(
         modifier = Modifier.padding(horizontal = 25.dp),
 
@@ -263,7 +295,7 @@ fun ConfirmPasswordTextField() {
             painterResource(id = R.drawable.hide)
 
         OutlinedTextField(
-            value = password,
+            value = uiState,
             maxLines = 1,
             singleLine = true,
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -273,8 +305,7 @@ fun ConfirmPasswordTextField() {
                 unfocusedBorderColor = Color.White
             ),
             onValueChange = {
-                password = it
-                credentials.passwordConfirm = it
+                onValueChange(it)
             },
             leadingIcon = {
                 Icon(
@@ -309,32 +340,13 @@ fun ConfirmPasswordTextField() {
 }
 
 @Composable
-fun validateButton(isLogging: Boolean) {
+fun validateButton(isLogging: Boolean,onLogin: () -> Unit,onSignUp: () -> Unit) {
 
-    val mContext = LocalContext.current
-    var toastMes = ""
 
     Button(
-        onClick = {
-            if (isLogging){
-                when(credentials.tryConnection()){
-                    0 -> toastMes = "Datos Incorrectos"
-                    1 -> toastMes = "Hay algún campo vacío"
-                    2 -> toastMes = "Sesión Iniciada"
-                }
-                Toast.makeText(mContext, toastMes, Toast.LENGTH_SHORT).show()
-            }
-            else if (!isLogging){
-                when(credentials.register()){
-                    0 -> toastMes = "Registrado con éxito"
-                    1 -> toastMes = "No dejes campos vacíos"
-                    2 -> toastMes = "Las contraseñas no coinciden"
-                    3 -> toastMes = "El formato del email es incorrecto"
-                }
+        onClick =
+        if (isLogging) onLogin else onSignUp,
 
-                Toast.makeText(mContext, toastMes, Toast.LENGTH_SHORT).show()
-            }
-        },
         colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
     ) {
 
