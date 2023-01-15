@@ -1,6 +1,7 @@
 package viliApp
 
 import android.util.Log
+import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,6 +37,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.vili.R
 import viliApp.DeviceConfig.Companion.heightPercentage
+import java.util.regex.Pattern
+
 
 @Preview
 @Composable
@@ -326,6 +329,7 @@ fun validateButton(isLogging: Boolean) {
                     0 -> toastMes = "Registrado con éxito"
                     1 -> toastMes = "No dejes campos vacíos"
                     2 -> toastMes = "Las contraseñas no coinciden"
+                    3 -> toastMes = "El formato del email es incorrecto"
                 }
 
                 Toast.makeText(mContext, toastMes, Toast.LENGTH_SHORT).show()
@@ -384,14 +388,22 @@ class credentials() {
         }
 
         fun register(): Int {
+
+            val pattern: Pattern = Patterns.EMAIL_ADDRESS
             var boolReturn = 0 //Registrado con éxito
 
             if (email.isNotBlank() && passwordConfirm.isNotBlank() && password.isNotBlank()) {
 
-                if (password == passwordConfirm) {
-                    userCredentials.registerCredentials(email, password)
-                    Log.d("credentials", "Usuario registrado")
-                } else boolReturn = 2 //Las contraseñas no coinciden
+                if (pattern.matcher(email).matches()) {
+
+                    if (password == passwordConfirm) {
+                        userCredentials.registerCredentials(email, password)
+                        Log.d("credentials", "Usuario registrado")
+                    } else boolReturn = 2 //Las contraseñas no coinciden
+
+                }
+                else boolReturn = 3
+
             } else boolReturn = 1 //Hay algún campo vacío
 
 
