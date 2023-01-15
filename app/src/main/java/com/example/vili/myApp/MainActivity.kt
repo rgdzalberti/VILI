@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
-import com.chaquo.python.Python
 import com.example.vili.myApp.theme.VILITheme
 import viliApp.NavigationHost
 import viliApp.getDeviceConfig

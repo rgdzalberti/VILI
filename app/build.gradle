@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.application'
-    id 'com.chaquo.python'
     id 'org.jetbrains.kotlin.android'
 }
 
@@ -20,28 +19,7 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
-        ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-        }
 
-        python {
-            version "3.8"
-            buildPython "C:/Users/Ricar/AppData/Local/Programs/Python/Python38-32/python.exe"
-            //buildPython "C:/Users/Ricar/AppData/Local/Programs/Python/Python38-32/python.exe", "-3.8"
-
-
-            pip{
-                //install "howlongtobeatpy"
-            }
-
-
-        }
-
-        sourceSets {
-            main {
-                python.srcDir "src/main/python"
-            }
-        }
 
     }
 
@@ -73,8 +51,8 @@ android {
 
 dependencies {
 
-    implementation platform('androidx.compose:compose-bom:2022.12.00') //bug
-
+    //Compose Bom
+    implementation platform('androidx.compose:compose-bom:2022.12.00')
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
@@ -90,11 +68,17 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling"
     debugImplementation "androidx.compose.ui:ui-test-manifest"
 
-    implementation("io.coil-kt:coil-compose:2.2.2") //asyncimage
+    //Coil - AsyncImage
+    implementation("io.coil-kt:coil-compose:2.2.2")
     implementation("io.coil-kt:coil:2.2.2")
 
-    implementation "com.google.accompanist:accompanist-systemuicontroller:0.28.0" //color arriba
-    implementation 'io.github.husnjak:igdb-api-jvm:1.0.8'
+    //SystemBarController
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.28.0"
+
+
+    //Firebase
+    //implementation platform('com.google.firebase:firebase-bom:31.1.1')
+    //implementation 'com.google.firebase:firebase-firestore-ktx'
 
     //Navigation
     def nav_version = "2.5.3"
