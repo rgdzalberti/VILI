@@ -16,6 +16,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.HorizontalAlignmentLine
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.saveable
 import coil.compose.rememberAsyncImagePainter
 import com.example.vili.Model.Querys.Game
 import com.google.firebase.firestore.FieldValue
@@ -35,7 +36,8 @@ fun gameList() {
     systemBarColor(color = Color(0xFF0A0A0A))
     getDeviceConfig()
 
-    val gameList = FBQuery.launchReturnGameList()
+    var gameList by remember { mutableStateOf( FBQuery.launchReturnGameList().sortedBy { it.name }) } //TODO añadir opciones recomopsables en un viewmodel quizas?
+
 
     Column(
         Modifier
