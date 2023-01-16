@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "180614912395",
+    "project_id": "vili-2ced3",
+    "storage_bucket": "vili-2ced3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:180614912395:android:ccb5ca19fa0ba35babf78e",
+        "android_client_info": {
+          "package_name": "com.example.vili"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "180614912395-1cpqbi6qplprco6adl4abhj6adl2q7qj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlcY_SaAg9fPoYQSGOFPvWymV4Ui8aIjY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "180614912395-1cpqbi6qplprco6adl4abhj6adl2q7qj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
