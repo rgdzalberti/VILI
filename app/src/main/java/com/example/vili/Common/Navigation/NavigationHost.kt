@@ -1,7 +1,6 @@
 package viliApp
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -19,7 +18,7 @@ fun NavigationHost (navController: NavHostController,startDestination: String){
         }
         composable(Destinations.Pantalla2.ruta){
 
-            MainScreen(navController = navController)
+            HomeScreen(navController = navController)
         }
         composable(route = Destinations.Pantalla3.ruta){
             //mainScreen(navController)

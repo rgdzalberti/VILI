@@ -1,6 +1,5 @@
 package viliApp
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,18 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.HorizontalAlignmentLine
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.saveable
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.vili.Model.Querys.Game
 import com.example.vili.Screens.Body.GameListViewModel
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
 
 
 @Preview
@@ -147,7 +140,7 @@ fun CalculateGamesContent(gameList: List<Game>) {
 
         //Como los muestro en rows de 2 miro la longitud de la lista y la divido en 2
         //Además le sumo uno por si se queda en decimal que tire hacia arriba
-        repeat((gameList.size / 2)+1) {
+        repeat(if (gameList.size%2==0) gameList.size / 2 else (gameList.size / 2) + 1) {
 
 
             item {

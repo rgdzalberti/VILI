@@ -4,4 +4,4 @@ data class Game(
     var id: String,
     var name: String,
     var imageURL: String
-)
+) : java.io.Serializable
