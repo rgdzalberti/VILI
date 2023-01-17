@@ -16,9 +16,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.HorizontalAlignmentLine
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.saveable
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.vili.Model.Querys.Game
+import com.example.vili.Screens.Body.GameListViewModel
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -27,17 +31,23 @@ import com.google.firebase.firestore.FirebaseFirestore
 @Composable
 fun previewGameList() {
     gameList()
-
 }
 
 @Composable
-fun gameList() {
+fun gameList(viewModel: GameListViewModel = hiltViewModel()) {
 
     systemBarColor(color = Color(0xFF0A0A0A))
     getDeviceConfig()
 
-    var gameList by remember { mutableStateOf( FBQuery.launchReturnGameList().sortedBy { it.name }) } //TODO añadir opciones recomopsables en un viewmodel quizas?
+    //TODO hacer un topbar en condiciones
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .height(DeviceConfig.heightPercentage(10))
+        .background(Color.Red)) {
+        Button(onClick = { viewModel.sortListByScore()}) {
 
+        }
+    }
 
     Column(
         Modifier
@@ -48,18 +58,21 @@ fun gameList() {
         horizontalAlignment = Alignment.CenterHorizontally
     )
     {
-        CalculateGamesContent(gameList = gameList)
+        if (viewModel.gameList.size != 0) {
+            CalculateGamesContent(gameList = viewModel.gameList)
+        }
     }
 
 }
 
 @Composable
 fun gameBox(
+    key: String = "",
     titulo: String = "",
     imageURL: String = "",
     Rating: Int = 0,
     invisible: Boolean = false
-) { //TODO quitar defaults de titulo e imageURL y añadir key del juego
+) { //TODO AÑADIR LA KEY
 
     var rating = ""
     repeat(Rating) { rating += "★" }
@@ -75,7 +88,7 @@ fun gameBox(
             contentAlignment = Alignment.BottomCenter
         ) {
 
-            //Animación de carga mientras no hay imagenes //TODO quizas parar la animacion de carga tras un tiempo?
+            //Animación de carga mientras no hay imagenes
             Column(
                 Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -143,6 +156,7 @@ fun CalculateGamesContent(gameList: List<Game>) {
 
                     Surface(elevation = 15.dp) {
                         gameBox(
+                            gameList[index].id,
                             gameList[index].name,
                             gameList[index].imageURL
                         )
@@ -154,6 +168,7 @@ fun CalculateGamesContent(gameList: List<Game>) {
                     if (index != gameList.size - 1) {
                         Surface(elevation = 15.dp) {
                             gameBox(
+                                gameList[index + 1].id,
                                 gameList[index + 1].name,
                                 gameList[index + 1].imageURL
                             )
@@ -161,13 +176,8 @@ fun CalculateGamesContent(gameList: List<Game>) {
                     }
                     else
                     {
-                            gameBox(
-                                "","",0, true
-                            )
-
+                        gameBox("","","",0, true)
                     }
-
-
 
                 }
                 Spacer(modifier = Modifier.height(20.dp))
