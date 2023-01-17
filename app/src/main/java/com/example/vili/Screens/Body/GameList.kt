@@ -15,19 +15,22 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.vili.Model.Querys.Game
 import com.example.vili.Screens.Body.GameListViewModel
+import viliApp.CentralizedData.Companion.updateGameID
 
 
 @Preview
 @Composable
 fun previewGameList() {
-    gameList()
+    gameList(rememberNavController())
 }
 
 @Composable
-fun gameList(viewModel: GameListViewModel = hiltViewModel()) {
+fun gameList(navController: NavController,viewModel: GameListViewModel = hiltViewModel()) {
 
     systemBarColor(color = Color(0xFF0A0A0A))
     getDeviceConfig()
@@ -52,7 +55,7 @@ fun gameList(viewModel: GameListViewModel = hiltViewModel()) {
     )
     {
         if (viewModel.gameList.size != 0) {
-            CalculateGamesContent(gameList = viewModel.gameList)
+            CalculateGamesContent(gameList = viewModel.gameList,navController)
         }
     }
 
@@ -60,12 +63,13 @@ fun gameList(viewModel: GameListViewModel = hiltViewModel()) {
 
 @Composable
 fun gameBox(
+    nav: NavController,
     key: String = "",
     titulo: String = "",
     imageURL: String = "",
     Rating: Int = 0,
     invisible: Boolean = false
-) { //TODO AÑADIR LA KEY
+) {
 
     var rating = ""
     repeat(Rating) { rating += "★" }
@@ -95,7 +99,11 @@ fun gameBox(
                 Image(
                     modifier = Modifier
                         .fillMaxSize()
-                        .clickable { TODO("Te lleva al menu del juego") },
+                        .clickable {
+                            updateGameID(key)
+                            nav.navigate(Destinations.Pantalla3.ruta)
+                            //TODO("Te lleva al menu del juego")
+                        },
                     painter = rememberAsyncImagePainter(imageURL),
                     contentDescription = null,
                     contentScale = ContentScale.Crop
@@ -129,7 +137,7 @@ fun gameBox(
 }
 
 @Composable
-fun CalculateGamesContent(gameList: List<Game>) {
+fun CalculateGamesContent(gameList: List<Game>, nav: NavController) {
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -149,6 +157,7 @@ fun CalculateGamesContent(gameList: List<Game>) {
 
                     Surface(elevation = 15.dp) {
                         gameBox(
+                            nav,
                             gameList[index].id,
                             gameList[index].name,
                             gameList[index].imageURL
@@ -161,6 +170,7 @@ fun CalculateGamesContent(gameList: List<Game>) {
                     if (index != gameList.size - 1) {
                         Surface(elevation = 15.dp) {
                             gameBox(
+                                nav,
                                 gameList[index + 1].id,
                                 gameList[index + 1].name,
                                 gameList[index + 1].imageURL
@@ -169,7 +179,7 @@ fun CalculateGamesContent(gameList: List<Game>) {
                     }
                     else
                     {
-                        gameBox("","","",0, true)
+                        gameBox(nav,"","","",0, true)
                     }
 
                 }

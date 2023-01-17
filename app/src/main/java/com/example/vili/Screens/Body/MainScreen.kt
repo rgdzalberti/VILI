@@ -50,7 +50,8 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
                     Text(text = "aaaa")}
                 2 ->
                 {
-                    gameList()
+                    //TODO barra de abajo desaparece y aparece la de la fun animacion
+                    gameList(navController)
                 }
 
             }
