@@ -18,7 +18,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.vili.Model.Querys.Game
 import com.example.vili.Screens.Body.GameListViewModel
 import viliApp.CentralizedData.Companion.updateGameID
 
@@ -137,7 +136,7 @@ fun gameBox(
 }
 
 @Composable
-fun CalculateGamesContent(gameList: List<Game>, nav: NavController) {
+fun CalculateGamesContent(gameList: MutableList<GameUserUnion>, nav: NavController) {
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -158,7 +157,7 @@ fun CalculateGamesContent(gameList: List<Game>, nav: NavController) {
                     Surface(elevation = 15.dp) {
                         gameBox(
                             nav,
-                            gameList[index].id,
+                            gameList[index].gameID,
                             gameList[index].name,
                             gameList[index].imageURL
                         )
@@ -171,7 +170,7 @@ fun CalculateGamesContent(gameList: List<Game>, nav: NavController) {
                         Surface(elevation = 15.dp) {
                             gameBox(
                                 nav,
-                                gameList[index + 1].id,
+                                gameList[index + 1].gameID,
                                 gameList[index + 1].name,
                                 gameList[index + 1].imageURL
                             )
