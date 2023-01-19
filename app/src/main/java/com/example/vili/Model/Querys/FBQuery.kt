@@ -4,11 +4,8 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.ktx.getField
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 
@@ -103,26 +100,22 @@ class FBQuery {
         }
 
 
-        fun removeGameFromUserList(gameID: String):Flow<Boolean> = flow{
+        fun removeGameFromUserList(gameID: String){
             val db = Firebase.firestore
             val userUID = FirebaseAuth.getInstance().currentUser?.uid
             val reference = db.collection("UserDATA").document(userUID.toString())
 
-            var boolReturn = false
 
             reference.get()
                 .addOnSuccessListener {
                     val oldList = it.get("userGameList") as List<*>
                     val newList = oldList.filter { !it.toString().contains(gameID) }
 
-                    //Si ambas listas no miden lo mismo esque se ha eliminado algo y devuelvo un true
-                    if (oldList.size != newList.size) { boolReturn = true }
-                    CentralizedData.gameIDtoRemove = gameID
+                    CentralizedData.tellGameListToReload()
 
                     reference.set(hashMapOf("userGameList" to newList))
 
-                }.await()
-            emit(boolReturn)
+                }
         }
 
 

@@ -18,7 +18,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.vili.Screens.Body.GameListViewModel
 import viliApp.CentralizedData.Companion.updateGameID
 
 
@@ -33,6 +32,11 @@ fun gameList(navController: NavController,viewModel: GameListViewModel = hiltVie
 
     systemBarColor(color = Color(0xFF0A0A0A))
     getDeviceConfig()
+
+    //Si se ha eliminado algun juego de la lista, entonces esto saltará y se recomposeará
+    if (CentralizedData.recomposeUI.value == true) {
+        reloadGameList(viewModel::reloadGameList)
+    }
 
     //TODO hacer un topbar en condiciones
     Column(modifier = Modifier
@@ -190,6 +194,14 @@ fun CalculateGamesContent(gameList: MutableList<GameUserUnion>, nav: NavControll
         }
 
     }
+
+
+}
+
+fun reloadGameList(reloadList: () -> Unit){
+
+    reloadList()
+
 }
 
     

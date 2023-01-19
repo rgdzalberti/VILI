@@ -1,15 +1,14 @@
 package viliApp
 
+import androidx.compose.runtime.mutableStateOf
+
 class CentralizedData {
 
     companion object{
 
         var gameID:String = ""
 
-        //Cuando elimino un juego de la BBDD me comunico con la UI
-        //Con esta variable que será observada
-        var recomposeUI: Boolean = false
-        var gameIDtoRemove = ""
+
 
         public fun updateGameID(newGameID:String){
             gameID = newGameID;
@@ -20,13 +19,10 @@ class CentralizedData {
             return gameID
         }
 
-        fun updateRecomposeList(){
-            /*
-            if (recomposeUI == false) {
-                gameIDtoRemove = ""}
-
-             */
-            recomposeUI = !recomposeUI
+        //Cuando elimino un juego de la BBDD me comunico con la UI
+        var recomposeUI =  mutableStateOf(false)
+        fun tellGameListToReload(){
+            recomposeUI.value = !recomposeUI.value
         }
 
 

@@ -44,24 +44,7 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
     fun removeGameFromUserList(gameID: String){
 
         var wasGameInList = false
-
-        viewModelScope.launch {
-
-            FBQuery.removeGameFromUserList(gameID)
-                .onCompletion {
-                    if (wasGameInList == false) {
-                        //TODO LANZAR TOAST DE NO PUEDES ELIMINAR UN JUEGO QUE NO ESTÁ EN TU LISTA
-                        //Ademas no estaria nada mal arreglarlo q no funca
-                        Log.i("wawa", "Este juego no está en tu lista")
-                    }
-
-                    //Se recompone la lista para que esté actualizada en caso de que vuelva
-                    CentralizedData.updateRecomposeList()
-                }
-                .collect {
-                    wasGameInList = it
-                }
-        }
+        FBQuery.removeGameFromUserList(gameID)
 
     }
 
