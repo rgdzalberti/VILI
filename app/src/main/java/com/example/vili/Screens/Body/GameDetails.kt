@@ -72,7 +72,10 @@ fun GameDetails(viewModel: GameDetailsViewModel = hiltViewModel()){
             Text(text = "aaa")
         }
 
-        
+        Text(text = viewModel.gameData.description)
+        Text(text = viewModel.gameData.avgDuration)
+        Text(text = viewModel.gameData.genres)
+        Text(text = viewModel.gameData.releaseDate.toString())
         
         
     }

@@ -33,7 +33,8 @@ fun gameList(navController: NavController,viewModel: GameListViewModel = hiltVie
     systemBarColor(color = Color(0xFF0A0A0A))
     getDeviceConfig()
 
-    //Si se ha eliminado algun juego de la lista, entonces esto saltará y se recomposeará
+    //Se hace la comprobación de si se ha hecho algún delete desde la última vez que estuvo en esta pantalla
+    //Si la respuesta es sí, esto será true y se actualizará la lista localmente también.
     if (CentralizedData.recomposeUI.value == true) {
         reloadGameList(viewModel::reloadGameList)
     }
@@ -198,6 +199,7 @@ fun CalculateGamesContent(gameList: MutableList<GameUserUnion>, nav: NavControll
 
 }
 
+//Esta es la función llamada para actualizar la lista localmente
 fun reloadGameList(reloadList: () -> Unit){
 
     reloadList()

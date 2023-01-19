@@ -8,6 +8,7 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
+import java.util.*
 
 
 class FBQuery {
@@ -26,7 +27,7 @@ class FBQuery {
             val gameList = mutableListOf<Game>()
 
             db.collection("Games").get().await().forEach{
-                gameList.add(Game(it.id,it.getString("Nombre").toString(),it.getString("Imagen").toString()))
+                gameList.add(Game(it.id,it.getString("Nombre").toString(),it.getString("Imagen").toString(),it.getString("AVGDuracion").toString(),it.getString("Descripcion").toString(),it.getString("Developers").toString(),it.getString("Generos").toString(), it.getDate("ReleaseDate")!!))
             }
 
             emit(gameList)
@@ -39,7 +40,7 @@ class FBQuery {
             var gameReturn : Game = Game()
 
             db.collection("Games").document(gameID).get().addOnSuccessListener {
-                gameReturn = Game(gameID,it.getString("Nombre").toString(),it.getString("Imagen").toString())
+                gameReturn = Game(it.id,it.getString("Nombre").toString(),it.getString("Imagen").toString(),it.getString("AVGDuracion").toString(),it.getString("Descripcion").toString(),it.getString("Developers").toString(),it.getString("Generos").toString(), it.getDate("ReleaseDate")!!)
             }.await()
 
             emit(gameReturn)

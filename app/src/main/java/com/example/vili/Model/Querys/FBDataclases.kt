@@ -1,9 +1,16 @@
 package viliApp
 
+import java.util.Date
+
 data class Game( //SI SE MODIFICA CAMBIAR FB getGamerUserUnion
     var id: String = "",
     var name: String = "",
-    var imageURL: String = ""
+    var imageURL: String = "",
+    var avgDuration: String = "",
+    var description: String = "",
+    var developers : String = "",
+    var genres: String = "",
+    var releaseDate: Date = Date()
 ) : java.io.Serializable
 
 data class UserGameEntry(
