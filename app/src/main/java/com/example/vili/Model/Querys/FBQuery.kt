@@ -1,13 +1,20 @@
 package viliApp
 
 import android.util.Log
+import androidx.compose.ui.graphics.Outline
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.auth.User
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
+import java.lang.reflect.GenericArrayType
 import java.util.*
 
 
@@ -27,7 +34,7 @@ class FBQuery {
             val gameList = mutableListOf<Game>()
 
             db.collection("Games").get().await().forEach{
-                gameList.add(Game(it.id,it.getString("Nombre").toString(),it.getString("Imagen").toString(),it.getString("AVGDuracion").toString(),it.getString("Descripcion").toString(),it.getString("Developers").toString(),it.getString("Generos").toString(), it.getDate("ReleaseDate")!!))
+                gameList.add(Game(it.id,it.getString("Nombre").toString(),it.getString("Imagen").toString(),it.getString("AVGDuracion").toString(),it.getString("Descripcion").toString(),it.getString("Developers").toString(),it.getString("Generos").toString(), it.getString("ReleaseDate").toString()))
             }
 
             emit(gameList)
@@ -40,66 +47,87 @@ class FBQuery {
             var gameReturn : Game = Game()
 
             db.collection("Games").document(gameID).get().addOnSuccessListener {
-                gameReturn = Game(it.id,it.getString("Nombre").toString(),it.getString("Imagen").toString(),it.getString("AVGDuracion").toString(),it.getString("Descripcion").toString(),it.getString("Developers").toString(),it.getString("Generos").toString(), it.getDate("ReleaseDate")!!)
+                gameReturn = Game(it.id,it.getString("Nombre").toString(),it.getString("Imagen").toString(),it.getString("AVGDuracion").toString(),it.getString("Descripcion").toString(),it.getString("Developers").toString(),it.getString("Generos").toString(), it.getString("ReleaseDate").toString())
             }.await()
 
             emit(gameReturn)
         }
 
         //Guardar entrada de juego en la lista del usuario pertinente
-        fun saveGameToUserList(gameID: String, score: Int = 0, comment:String = ""){
+        fun saveGameToUserList(game: Game, score: Int = 0, comment:String = ""){
 
             val db = Firebase.firestore
-            val data = UserGameEntry(gameID,score,comment)
+            val data = UserGame("[$score]","[$comment]","[${game.id}]","[${game.name}]","[${game.imageURL}]","[${game.avgDuration}]","[${game.description}]","[${game.developers}]","[${game.genres}]","[${game.releaseDate}]")
 
             //Guardo la referencia al juego en el pertinente registro del usuario
             val userUID = FirebaseAuth.getInstance().currentUser?.uid
             val reference = db.collection("UserDATA").document(userUID.toString())
 
-            reference.get().addOnSuccessListener {
-                if (it.get("userGameList") != null)
-                {
-                    //Como el campo existe, actualizo los datos
-                    reference.update("userGameList", FieldValue.arrayUnion(data))
-                }
-                else{
-                    //El campo no existe, así que lo creo y después añado los datos
-                    val emptyArray = mutableListOf<UserGameEntry>()
-                    reference.set(hashMapOf("userGameList" to emptyArray))
+            if (game.id != "[]") {
+
+                reference.get().addOnSuccessListener {
+                    if (it.get("userGameList") != null) {
+                        //Como el campo existe, actualizo los datos
+                        reference.update("userGameList", FieldValue.arrayUnion(data))
+                    } else {
+                        //El campo no existe, así que lo creo y después añado los datos
+                        val emptyArray = mutableListOf<UserGame>()
+                        reference.set(hashMapOf("userGameList" to emptyArray))
+                        reference.update("userGameList", FieldValue.arrayUnion(data))
+                    }
+                    CentralizedData.tellGameListToReload(true)
                 }
             }
+
 
         }
 
         //Obtener lista de juegos de usuario
-        fun getUserGameList(): Flow<List<UserGameEntry>> = flow{
+        fun getUserGameList(): Flow<List<UserGame>> = callbackFlow{
 
             val db = Firebase.firestore
             val userUID = FirebaseAuth.getInstance().currentUser?.uid
             val reference = db.collection("UserDATA").document(userUID.toString())
 
-            val gameList = mutableListOf<UserGameEntry>()
-            val gameUserUnionList = mutableListOf<GameUserUnion>()
+            val gameList = mutableListOf<UserGame>()
 
             reference.get()
                 .addOnSuccessListener { document ->
 
-                    //Primero obtengo los datos del usuario sobre cada juego, es decir, comentarios y score
-                    val gameEntry = document.get("userGameList") as List<*>
+                    if (document.get("userGameList") != null)
+                    {
+                        //Como el campo existe, saco los datos
+                        val gameEntry = document.get("userGameList") as List<*>
 
-                    gameEntry.forEach {
-                        val text = it.toString()
-                        var gameID = text.substringAfter("gameID="); gameID = gameID.substringBefore(",")
-                        var score = text.substringAfter("score="); score = score.substringBefore(",")
-                        var comment = text.substringAfter("comment="); comment = comment.substringBefore("}")
+                        gameEntry.forEach {
 
-                        gameList.add(UserGameEntry(gameID,score.toInt(),comment))
+                            val text = it.toString()
+                            var userComment = text.substringAfter("userComment=["); userComment = userComment.substringBefore("]")
+                            var developers = text.substringAfter("developers=["); developers = developers.substringBefore("]")
+                            var releaseDate = text.substringAfter("releaseDate=["); releaseDate = releaseDate.substringBefore("]")
+                            var genres = text.substringAfter("genres=["); genres = genres.substringBefore("]")
+                            var imageURL = text.substringAfter("imageURL=["); imageURL = imageURL.substringBefore("]")
+                            var name = text.substringAfter("name=["); name = name.substringBefore("]")
+                            var description = text.substringAfter("description=["); description = description.substringBefore("]")
+                            var userScore = text.substringAfter("userScore=["); userScore = userScore.substringBefore("]")
+                            var id = text.substringAfter("id=["); id = id.substringBefore("]")
+                            var avgDuration = text.substringAfter("avgDuration=["); avgDuration = avgDuration.substringBefore("]")
+
+
+                            gameList.add(UserGame(userScore,userComment,id,name,imageURL,avgDuration,description,developers,genres,releaseDate))
+                        }
+                        Log.i("wawa","QUERY " + gameEntry.size.toString())
                     }
-                }.await()
-            emit(gameList)
+                    else{
+                        //El campo no existe, así que lo creo para la proxima vez
+                        val emptyArray = mutableListOf<UserGame>()
+                        reference.set(hashMapOf("userGameList" to emptyArray))
+                    }
+                    trySend(gameList)
 
+                }
+            awaitClose { channel.close() }
         }
-
 
         fun removeGameFromUserList(gameID: String){
             val db = Firebase.firestore
@@ -112,11 +140,11 @@ class FBQuery {
                     val oldList = it.get("userGameList") as List<*>
                     val newList = oldList.filter { !it.toString().contains(gameID) }
 
-                    CentralizedData.tellGameListToReload()
 
                     reference.set(hashMapOf("userGameList" to newList))
-
+                    CentralizedData.tellGameListToReload(true)
                 }
+
         }
 
 

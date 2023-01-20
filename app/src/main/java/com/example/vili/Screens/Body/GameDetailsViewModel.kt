@@ -38,7 +38,7 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
     }
 
     fun addGameToUserList(score: Int = 0, comment: String = ""){
-        FBQuery.saveGameToUserList(gameID, score, comment)
+        FBQuery.saveGameToUserList(gameData, score, comment)
     }
 
     fun removeGameFromUserList(gameID: String){

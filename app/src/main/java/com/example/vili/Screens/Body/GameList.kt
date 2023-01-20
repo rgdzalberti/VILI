@@ -1,5 +1,6 @@
 package viliApp
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,7 +37,7 @@ fun gameList(navController: NavController,viewModel: GameListViewModel = hiltVie
     //Se hace la comprobación de si se ha hecho algún delete desde la última vez que estuvo en esta pantalla
     //Si la respuesta es sí, esto será true y se actualizará la lista localmente también.
     if (CentralizedData.recomposeUI.value == true) {
-        reloadGameList(viewModel::reloadGameList)
+        reloadGameList(viewModel::reloadList)
     }
 
     //TODO hacer un topbar en condiciones
@@ -45,6 +46,9 @@ fun gameList(navController: NavController,viewModel: GameListViewModel = hiltVie
         .height(DeviceConfig.heightPercentage(10))
         .background(Color.Red)) {
         Button(onClick = { viewModel.sortListByScore()}) {
+
+        }
+        Button(onClick = { viewModel.reloadList()}) {
 
         }
     }
@@ -58,8 +62,8 @@ fun gameList(navController: NavController,viewModel: GameListViewModel = hiltVie
         horizontalAlignment = Alignment.CenterHorizontally
     )
     {
-        if (viewModel.gameList.size != 0) {
-            CalculateGamesContent(gameList = viewModel.gameList,navController)
+        if (CentralizedData.gameList.value.size != 0) {
+            CalculateGamesContent(gameList = CentralizedData.gameList.value,navController)
         }
     }
 
@@ -77,7 +81,6 @@ fun gameBox(
 
     var rating = ""
     repeat(Rating) { rating += "★" }
-
 
         Box(
             modifier = Modifier
@@ -141,7 +144,7 @@ fun gameBox(
 }
 
 @Composable
-fun CalculateGamesContent(gameList: MutableList<GameUserUnion>, nav: NavController) {
+fun CalculateGamesContent(gameList: List<UserGame>, nav: NavController) {
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -154,7 +157,6 @@ fun CalculateGamesContent(gameList: MutableList<GameUserUnion>, nav: NavControll
         //Además le sumo uno por si se queda en decimal que tire hacia arriba
         repeat(if (gameList.size%2==0) gameList.size / 2 else (gameList.size / 2) + 1) {
 
-
             item {
                 Row()
                 {
@@ -162,7 +164,7 @@ fun CalculateGamesContent(gameList: MutableList<GameUserUnion>, nav: NavControll
                     Surface(elevation = 15.dp) {
                         gameBox(
                             nav,
-                            gameList[index].gameID,
+                            gameList[index].id,
                             gameList[index].name,
                             gameList[index].imageURL
                         )
@@ -175,7 +177,7 @@ fun CalculateGamesContent(gameList: MutableList<GameUserUnion>, nav: NavControll
                         Surface(elevation = 15.dp) {
                             gameBox(
                                 nav,
-                                gameList[index + 1].gameID,
+                                gameList[index + 1].id,
                                 gameList[index + 1].name,
                                 gameList[index + 1].imageURL
                             )

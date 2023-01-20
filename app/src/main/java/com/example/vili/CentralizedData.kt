@@ -1,14 +1,21 @@
 package viliApp
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewmodel.compose.saveable
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class CentralizedData {
 
     companion object{
 
+        var gameList = mutableStateOf(listOf<UserGame>())
+
+        //Mas detalles
         var gameID:String = ""
-
-
 
         public fun updateGameID(newGameID:String){
             gameID = newGameID;
@@ -19,24 +26,10 @@ class CentralizedData {
             return gameID
         }
 
-        //Cuando elimino un juego de la BBDD me comunico con la UI
+
         var recomposeUI =  mutableStateOf(false)
-        fun tellGameListToReload(){
-            recomposeUI.value = !recomposeUI.value
-        }
-
-
-        //CONVERTIR A GAMEUSERUNION
-        fun convertToGameUserUnion(gameList :List<Game>,userGameList :List<UserGameEntry>):List<GameUserUnion>{
-
-            val unifiedList = mutableListOf<GameUserUnion>()
-
-            for (i in 0 until gameList.size){
-                unifiedList.add(GameUserUnion(userGameList[i].gameID,userGameList[i].score,userGameList[i].comment,gameList[i].name,gameList[i].imageURL))
-            }
-
-
-            return unifiedList
+        fun tellGameListToReload(newValue : Boolean){
+            recomposeUI.value = newValue
 
         }
 

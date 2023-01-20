@@ -1,9 +1,10 @@
 package viliApp
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -32,7 +33,6 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
 
 
     //TODO desplegable izq
-
     Scaffold(bottomBar = {BottomBar(viewModel::updateIndex,viewModel)}) {
         Column(
             Modifier
@@ -46,8 +46,13 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
             when(viewModel.selectedIndex){
 
                 0 -> {}
-                1 -> {
-                    Text(text = "aaaa")}
+                1 -> 
+                {
+                    //TODO TOPBAR para buscar guejos
+                    if (viewModel.gameList.isNotEmpty()) {
+                        MainScreenSkin(viewModel.gameList, navController)
+                    }
+                }
                 2 ->
                 {
                     //TODO barra de abajo desaparece y aparece la de la fun animacion
@@ -101,4 +106,30 @@ fun BottomBar(updateIndex: (Int) -> Unit, viewModel: MainScreenViewModel) {
             unselectedContentColor = Color.White)
     }
 }
+
+@Composable
+fun MainScreenSkin(gameList: List<Game>,nav:NavController){
+
+        LazyRow(
+            Modifier
+                .fillMaxSize()
+                .padding(8.dp)) {
+
+            item {
+                Row() {
+                    for (i in 0 until 5) {
+                        val game = gameList[i]
+                        gameBox(nav,game.id,game.name,game.imageURL)
+                        Spacer(modifier = Modifier.width(10.dp))
+                    }
+
+                }
+            }
+
+        }
+    
+}
+
+
+
 
