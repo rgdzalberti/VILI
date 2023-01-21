@@ -25,3 +25,9 @@ data class UserGame(
     var genres: String = "",
     var releaseDate: String = ""
 ): java.io.Serializable
+
+data class GameBanner(
+    val name: String = "",
+    val imageURL : String = "",
+    val gameID : String = "",
+): java.io.Serializable

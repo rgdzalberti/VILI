@@ -147,6 +147,21 @@ class FBQuery {
 
         }
 
+        fun getGameBanners():Flow<List<GameBanner>> = callbackFlow{
+            val db = Firebase.firestore
+            val reference = db.collection("gameBanners")
+
+            val gameBannerList = mutableListOf<GameBanner>()
+
+            reference.get().await().forEach {
+                gameBannerList.add(GameBanner(it.getString("name").toString(),it.getString("imageURL").toString(),it.getString("gameID").toString()))
+            }
+
+            trySend(gameBannerList)
+
+            awaitClose { channel.close() }
+        }
+
 
     }
 }

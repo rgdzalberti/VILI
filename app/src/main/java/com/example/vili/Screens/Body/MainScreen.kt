@@ -2,7 +2,9 @@ package viliApp
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -15,6 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Device
@@ -24,6 +29,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
+import com.example.vili.R
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
 
 @Preview
 @Composable
@@ -54,7 +63,7 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
                 {
                     //TODO TOPBAR para buscar guejos
                     if (viewModel.gameList.isNotEmpty()) {
-                        MainScreenSkin(viewModel.gameList, navController)
+                        MainScreenSkin(viewModel.gameList, navController,viewModel.bannerList,viewModel.recommendedList)
                     }
                 }
                 2 ->
@@ -78,7 +87,8 @@ fun BottomBar(updateIndex: (Int) -> Unit, viewModel: MainScreenViewModel) {
     BottomNavigation(modifier = Modifier.fillMaxHeight(0.07f),elevation = 10.dp, backgroundColor = Color(0xDD050505)) {
 
         BottomNavigationItem(icon = {
-            Icon(imageVector = Icons.Default.Home,"") //TODO cambiar iconos
+            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.person),"", modifier = Modifier.size(30.dp))
+
         },
             selected = (viewModel.selectedIndex == 0),
             onClick = {
@@ -99,7 +109,7 @@ fun BottomBar(updateIndex: (Int) -> Unit, viewModel: MainScreenViewModel) {
             unselectedContentColor = Color.White)
 
         BottomNavigationItem(icon = {
-            Icon(imageVector = Icons.Default.ThumbUp,"")
+            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.list),"", modifier = Modifier.size(30.dp))
         },
             selected = (viewModel.selectedIndex == 2),
             onClick = {
@@ -110,8 +120,9 @@ fun BottomBar(updateIndex: (Int) -> Unit, viewModel: MainScreenViewModel) {
     }
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
-fun MainScreenSkin(gameList: List<Game>,nav:NavController){
+fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<GameBanner>, reccommList: List<Game>){
 
     //TOPBAR
     Row(
@@ -208,8 +219,7 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController){
 
                 LazyRow(
                     Modifier
-                        .fillMaxSize()
-                        .padding(top = 20.dp, bottom = 20.dp),
+                        .fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
@@ -217,10 +227,31 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController){
 
                         Column(modifier = Modifier
                             .fillParentMaxSize()
-                            .background(Color.Green)){
-                            //TODO METER CARRUSEL IMAGEN
-                            Text(text = "aaa")
+                            .background(Color.Transparent)
+                            ){
+
+
+
+                            HorizontalPager(count = 3, ) { page ->
+                                // Our page content
+                                Image(
+                                    modifier = Modifier
+                                        .padding(top = 20.dp, bottom = 20.dp)
+                                        .fillMaxSize()
+                                        .clickable {
+                                            CentralizedData.updateGameID(bannerList[page].gameID)
+                                            nav.navigate(Destinations.Pantalla3.ruta)
+                                        },
+                                    painter = rememberAsyncImagePainter(bannerList[page].imageURL),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop
+                                )
+
+                            }
+                            
                         }
+                        
+
                         
                     }
 
@@ -287,8 +318,8 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController){
 
                     item {
                         Row() {
-                            repeat (6) {
-                                val game = gameList.random() //TODO INIT DE ESTO
+                            for (i in 0 until reccommList.size) {
+                                val game = reccommList[i] //TODO INIT DE ESTO
                                 Surface(elevation = 15.dp) {
                                     gameBox(nav, game.id, game.name, game.imageURL)
                                 }
@@ -300,6 +331,7 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController){
 
                 }
             }
+
             //Esto suma espacio abajo para subir el ultimo LazyRow ya que lo cubre el bottombar
             Spacer(Modifier.height(50.dp))
         }
