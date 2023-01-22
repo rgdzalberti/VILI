@@ -1,5 +1,6 @@
 package viliApp
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -22,6 +23,13 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
     var bannerList by savedStateHandle.saveable { mutableStateOf(listOf<GameBanner>()) }
     var recommendedList by savedStateHandle.saveable { mutableStateOf(mutableListOf<Game>()) }
 
+    //Side Menus
+    var enableSearchMenu by savedStateHandle.saveable { mutableStateOf(false) }
+    var enableSettingsMenu by savedStateHandle.saveable { mutableStateOf(false) }
+
+    //Bottom bar
+    var bottomBar by savedStateHandle.saveable { mutableStateOf(true) }
+
     init {
         //Obtengo la lista de juegos para lanzar recomendacions en la pantalla principal
         viewModelScope.launch {
@@ -42,12 +50,37 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
         viewModelScope.launch {
             FBQuery.getGameBanners().collect { bannerList = it }
         }
+
     }
 
     fun updateIndex(newIndex : Int){
         selectedIndex = newIndex
     }
 
+    //2 funciones para controlar si se está mostrando los side menus
+    fun switchSearch(){
+        enableSearchMenu = !enableSearchMenu
+        //Controlo cuando aparece/desaparece la barra de abajo
+        enableBottomBar()
+    }
 
+    fun switchSettings(){
+        enableSettingsMenu = !enableSettingsMenu
+        //Controlo cuando aparece/desaparece la barra de abajo
+        enableBottomBar()
+    }
+
+    fun enableBottomBar(){
+        bottomBar = !bottomBar
+    }
+
+    //2 funciones para controlar cuando le das a back en los side menus
+    fun searchBackPressed(){
+        switchSearch()
+    }
+
+    fun settingsBackPressed(){
+        switchSettings()
+    }
 
 }

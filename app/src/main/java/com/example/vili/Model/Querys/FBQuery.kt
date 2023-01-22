@@ -116,7 +116,6 @@ class FBQuery {
 
                             gameList.add(UserGame(userScore,userComment,id,name,imageURL,avgDuration,description,developers,genres,releaseDate))
                         }
-                        Log.i("wawa","QUERY " + gameEntry.size.toString())
                     }
                     else{
                         //El campo no existe, así que lo creo para la proxima vez

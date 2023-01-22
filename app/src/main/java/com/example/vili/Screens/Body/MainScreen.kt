@@ -2,6 +2,14 @@ package viliApp
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.annotation.FloatRange
+import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,12 +21,13 @@ import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -26,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Device
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -33,6 +43,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.vili.R
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
+import com.google.firebase.firestore.model.mutation.Overlay
+import kotlinx.coroutines.launch
 
 @Preview
 @Composable
@@ -47,7 +59,7 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
     getDeviceConfig()
     systemBarColor(color = Color(0xFF0A0A0A))
 
-    Scaffold(bottomBar = {BottomBar(viewModel::updateIndex,viewModel)}) {
+    Scaffold(bottomBar = {BottomBar(viewModel::updateIndex,viewModel,viewModel.bottomBar)}) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -61,10 +73,61 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
                 0 -> {}
                 1 -> 
                 {
-                    //TODO TOPBAR para buscar guejos
-                    if (viewModel.gameList.isNotEmpty()) {
-                        MainScreenSkin(viewModel.gameList, navController,viewModel.bannerList,viewModel.recommendedList)
+                    
+                    //MENU SEARCH
+                    AnimatedVisibility(
+                        visible = viewModel.enableSearchMenu,
+                        enter = slideInHorizontally(
+                            initialOffsetX = { fullWidth -> +fullWidth },
+                            animationSpec = tween(
+                                durationMillis = 500,
+                                easing = LinearOutSlowInEasing
+                            )
+                        ),
+                        exit = slideOutHorizontally(
+                            targetOffsetX = { fullWidth -> +fullWidth },
+                            animationSpec = tween(
+                                durationMillis = 500,
+                                easing = FastOutLinearInEasing
+                            )
+                        )
+                    ) {
+                        //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
+                        //Sino que este menú se vuelva a plegar
+                        BackPressHandler(viewModel::searchBackPressed)
+                        searchMenu()
                     }
+
+                    //MENU SEARCH
+                    AnimatedVisibility(
+                        visible = viewModel.enableSettingsMenu,
+                        enter = slideInHorizontally(
+                            initialOffsetX = { fullWidth -> -fullWidth },
+                            animationSpec = tween(
+                                durationMillis = 500,
+                                easing = LinearOutSlowInEasing
+                            )
+                        ),
+                        exit = slideOutHorizontally(
+                            targetOffsetX = { fullWidth -> -fullWidth },
+                            animationSpec = tween(
+                                durationMillis = 500,
+                                easing = FastOutLinearInEasing
+                            )
+                        )
+                    ) {
+                        //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
+                        //Sino que este menú se vuelva a plegar
+                        BackPressHandler(viewModel::settingsBackPressed)
+                        settingsMenu()
+                    }
+
+                    //MENU SETTINGS
+                    if (viewModel.gameList.isNotEmpty()) {
+                        MainScreenSkin(viewModel.gameList, navController,viewModel.bannerList,viewModel.recommendedList,viewModel::switchSearch,viewModel::switchSettings)
+                    }
+
+
                 }
                 2 ->
                 {
@@ -82,89 +145,109 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
 }
 
 @Composable
-fun BottomBar(updateIndex: (Int) -> Unit, viewModel: MainScreenViewModel) {
+fun BottomBar(updateIndex: (Int) -> Unit, viewModel: MainScreenViewModel,showBottom: Boolean) {
 
-    BottomNavigation(modifier = Modifier.fillMaxHeight(0.07f),elevation = 10.dp, backgroundColor = Color(0xDD050505)) {
-
-        BottomNavigationItem(icon = {
-            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.person),"", modifier = Modifier.size(30.dp))
-
-        },
-            selected = (viewModel.selectedIndex == 0),
-            onClick = {
-                updateIndex(0)
-            },
-            selectedContentColor = Color.Red,
-            unselectedContentColor = Color.White
+    AnimatedVisibility(
+        visible = showBottom,
+        enter = slideInVertically(
+            initialOffsetY = { fullHeight -> +fullHeight },
+            animationSpec = tween(
+                durationMillis = 300,
+                easing = LinearOutSlowInEasing
+            )
+        ),
+        exit = slideOutVertically(
+            targetOffsetY = { fullHeight -> +fullHeight  },
+            animationSpec = tween(
+                durationMillis = 300,
+                easing = FastOutLinearInEasing
+            )
         )
+    ){
+        BottomNavigation(modifier = Modifier.fillMaxHeight(0.07f),elevation = 10.dp, backgroundColor = Color(0xDD050505)) {
 
-        BottomNavigationItem(icon = {
-            Icon(imageVector = Icons.Default.Home,"")
-        },
-            selected = (viewModel.selectedIndex == 1),
-            onClick = {
-                updateIndex(1)
-            },
-            selectedContentColor = Color.Red,
-            unselectedContentColor = Color.White)
+            BottomNavigationItem(icon = {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.person),"", modifier = Modifier.size(30.dp))
 
-        BottomNavigationItem(icon = {
-            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.list),"", modifier = Modifier.size(30.dp))
-        },
-            selected = (viewModel.selectedIndex == 2),
-            onClick = {
-                updateIndex(2)
             },
-            selectedContentColor = Color.Red,
-            unselectedContentColor = Color.White)
+                selected = (viewModel.selectedIndex == 0),
+                onClick = {
+                    updateIndex(0)
+                },
+                selectedContentColor = Color.Red,
+                unselectedContentColor = Color.White
+            )
+
+            BottomNavigationItem(icon = {
+                Icon(imageVector = Icons.Default.Home,"")
+            },
+                selected = (viewModel.selectedIndex == 1),
+                onClick = {
+                    updateIndex(1)
+                },
+                selectedContentColor = Color.Red,
+                unselectedContentColor = Color.White)
+
+            BottomNavigationItem(icon = {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.list),"", modifier = Modifier.size(30.dp))
+            },
+                selected = (viewModel.selectedIndex == 2),
+                onClick = {
+                    updateIndex(2)
+                },
+                selectedContentColor = Color.Red,
+                unselectedContentColor = Color.White)
+        }
     }
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<GameBanner>, reccommList: List<Game>){
+fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<GameBanner>, reccommList: List<Game>, switchSearch:() -> Unit, switchSettings:() -> Unit){
 
     //TOPBAR
     Row(
         Modifier
             .fillMaxWidth()
             .height(DeviceConfig.heightPercentage(5))
-            .background(Color(0xFFF70000))
+            .background(Color(0xFF030303))
     , horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically
     )
     {
         Box(
             Modifier
-                .background(Color.Green) //Color(0xFF0A0A0A)
+                .background(Color.Transparent) //Color(0xFF0A0A0A)
                 .fillMaxHeight()
-                .weight(0.33f),
-            contentAlignment = Alignment.Center
+                .weight(0.33f)
+                .padding(start = 5.dp),
+                contentAlignment = Alignment.CenterStart
         ){
-            Text(text = "aa")
+            IconButton(onClick = { switchSettings() }) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.settings),"", modifier = Modifier.size(30.dp),tint = Color.White)
+            }
+
         }
         Box(
             Modifier
-                .background(Color.Red)
+                .background(Color.Transparent)
                 .fillMaxHeight()
                 .weight(0.50f),
             contentAlignment = Alignment.Center){
-            Text(text = "aa")
+            Image(painter = painterResource(R.drawable.logovilipng), contentDescription = "")
         }
         Box(
             Modifier
-                .background(Color.Green)
+                .background(Color.Transparent)
                 .fillMaxHeight()
-                .weight(0.33f),
-            contentAlignment = Alignment.Center){
-            Text(text = "aa")
-        }
-        /* BARRA BUSQUEDA SEGUIR CON EL BIEN
-        Box(Modifier.fillMaxHeight(0.7f).fillMaxWidth(0.6f).background(Color.Green)){
-            Text(text = "aaa")
-            //TODO TEXTFIELD
+                .weight(0.33f)
+                .padding(end = 5.dp),
+            contentAlignment = Alignment.CenterEnd){
+            IconButton(onClick = { switchSearch() }) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.search),"", modifier = Modifier.size(30.dp), tint = Color.White)
+            }
+
         }
 
-         */
     }
 
     LazyColumn(Modifier.fillMaxSize()) {
@@ -338,6 +421,63 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
     }
     
 }
+
+@Composable
+fun searchMenu(){
+
+
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color.Red),
+    ) {
+        Text(text = "aa")
+    }
+    
+}
+
+@Composable
+fun settingsMenu(){
+
+
+    Box(
+        Modifier
+            .fillMaxHeight()
+            .fillMaxWidth(0.6f)
+            .background(Color.Red)) {
+        Text(text = "aaa")
+    }
+
+
+}
+
+
+@Composable
+fun BackPressHandler(
+    onBackPressed: () -> Unit,
+    backPressedDispatcher: OnBackPressedDispatcher? = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+) {
+    val currentOnBackPressed by rememberUpdatedState(newValue = onBackPressed)
+
+    val backCallback = remember {
+        object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                currentOnBackPressed()
+            }
+        }
+    }
+
+    DisposableEffect(key1 = backPressedDispatcher) {
+        backPressedDispatcher?.addCallback(backCallback)
+
+        onDispose {
+            backCallback.remove()
+        }
+    }
+}
+
+
+
 
 
 
