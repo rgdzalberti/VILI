@@ -1,11 +1,15 @@
 package viliApp
 
 import android.util.Log
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
+import androidx.navigation.NavController
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
@@ -29,6 +33,12 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
 
     //Bottom bar
     var bottomBar by savedStateHandle.saveable { mutableStateOf(true) }
+
+    //Log Out?
+    var logOutnPop by savedStateHandle.saveable { mutableStateOf(false) }
+
+    //Search Textfield
+    var searchText by savedStateHandle.saveable { mutableStateOf("") }
 
     init {
         //Obtengo la lista de juegos para lanzar recomendacions en la pantalla principal
@@ -81,6 +91,15 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
 
     fun settingsBackPressed(){
         switchSettings()
+    }
+
+    fun logOut(){
+        Firebase.auth.signOut()
+        logOutnPop = !logOutnPop
+    }
+
+    fun onSearchTextChange(newValue: String) {
+        this.searchText = newValue
     }
 
 }

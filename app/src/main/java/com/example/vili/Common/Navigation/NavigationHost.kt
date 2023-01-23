@@ -1,6 +1,9 @@
 package viliApp
 
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -10,8 +13,7 @@ import androidx.navigation.compose.composable
 fun NavigationHost (navController: NavHostController,startDestination: String){
     NavHost(
         navController = navController,
-        startDestination = startDestination
-    )
+        startDestination = startDestination )
     {
         composable(Destinations.Pantalla1.ruta){
            LoginScreen(navController = navController)
@@ -35,6 +37,17 @@ fun NavigatePop(navController:NavController,destination:String){
         popUpTo(Destinations.Pantalla1.ruta) {
             inclusive = true
         }
+    }
+}
+
+@Composable
+fun NavigatePopLogOut(navController:NavController,destination:String){
+    LaunchedEffect(Unit){
+    navController.navigate(destination) {
+        popUpTo(Destinations.Pantalla2.ruta) {
+            inclusive = true
+        }
+    }
     }
 }
 
