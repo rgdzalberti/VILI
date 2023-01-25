@@ -20,6 +20,9 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
     var gameData by savedStateHandle.saveable { mutableStateOf(Game()) }
     var enableMoreOptions by savedStateHandle.saveable { mutableStateOf(false) }
 
+    var listaGenres = listOf<String>()
+    var moreGenres by savedStateHandle.saveable { mutableStateOf(false) }
+
     init {
         //Obtengo la referencia del juego primero en mi clase centralizada
 
@@ -27,8 +30,8 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
 
         //Hago una query en busca de información sobre este juego
         viewModelScope.launch{
-            FBQuery.getGame(gameID).collect {gameData = it}
-
+            FBQuery.getGame(gameID)
+                .collect {gameData = it; listaGenres = gameData.genres.split(",")}
         }
 
     }
@@ -46,6 +49,10 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
         var wasGameInList = false
         FBQuery.removeGameFromUserList(gameID)
 
+    }
+
+    fun updateMoreGenres(newValue: Boolean){
+        moreGenres = newValue
     }
 
 }

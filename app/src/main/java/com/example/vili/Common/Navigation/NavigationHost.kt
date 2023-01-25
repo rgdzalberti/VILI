@@ -23,7 +23,7 @@ fun NavigationHost (navController: NavHostController,startDestination: String){
             HomeScreen(navController = navController)
         }
         composable(route = Destinations.Pantalla3.ruta){
-            GameDetails()
+            GameDetails(navController)
         }
 
     }

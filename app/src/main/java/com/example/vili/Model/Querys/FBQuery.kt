@@ -41,16 +41,17 @@ class FBQuery {
         }
 
         //Get an specific game in the collection
-        fun getGame(gameID: String): Flow<Game> = flow{
+        fun getGame(gameID: String): Flow<Game> = callbackFlow{
 
             val db = Firebase.firestore
             var gameReturn : Game = Game()
 
             db.collection("Games").document(gameID).get().addOnSuccessListener {
                 gameReturn = Game(it.id,it.getString("Nombre").toString(),it.getString("Imagen").toString(),it.getString("AVGDuracion").toString(),it.getString("Descripcion").toString(),it.getString("Developers").toString(),it.getString("Generos").toString(), it.getString("ReleaseDate").toString())
-            }.await()
+                trySend(gameReturn)
+            }
+            awaitClose { channel.close() }
 
-            emit(gameReturn)
         }
 
         //Guardar entrada de juego en la lista del usuario pertinente

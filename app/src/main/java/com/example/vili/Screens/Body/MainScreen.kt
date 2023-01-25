@@ -75,7 +75,6 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
 
 
     Scaffold(
-        //topBar = { topBar(viewModel::switchSettings,viewModel::switchSearch,navController,viewModel.bottomBar)},
         bottomBar = {BottomBar(viewModel::updateIndex,viewModel,viewModel.bottomBar)}
     ) {
         Column(
@@ -265,7 +264,7 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
                 LazyRow(
                     Modifier
                         .fillMaxSize()
-                        .padding(8.dp)
+                        .padding(5.dp),
                 ) {
 
                     item {
@@ -289,7 +288,7 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
                 Modifier
                     .fillMaxWidth()
                     .height(DeviceConfig.heightPercentage(40))
-                    .background(Color(0xFF0A0A0A))
+                    .background(Color(0xFF131313))
 
             ) {
 
