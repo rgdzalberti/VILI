@@ -109,7 +109,6 @@ fun gameBox(
                         .clickable {
                             updateGameID(key)
                             nav.navigate(Destinations.Pantalla3.ruta)
-                            //TODO("Te lleva al menu del juego")
                         },
                     painter = rememberAsyncImagePainter(imageURL),
                     contentDescription = null,

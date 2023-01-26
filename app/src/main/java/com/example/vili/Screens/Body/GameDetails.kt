@@ -42,14 +42,15 @@ fun previewGameDetails(){
 @Composable
 fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hiltViewModel()){
 
+    //Caja para el submenú
+    Box(){
+
     Column(
         Modifier
             .fillMaxSize()
             .background(Color(0xFF161616))) {
 
-        if (viewModel.enableMoreOptions) {
-            MoreOptions(viewModel::statusMoreOptions,viewModel::addGameToUserList,viewModel::removeGameFromUserList,viewModel.gameID)
-        }
+
 
         //TopBar
         Row(
@@ -95,7 +96,8 @@ fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hi
 
 
             }
-            
+
+
         }
         
         //Cajetilla Portada
@@ -173,8 +175,13 @@ fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hi
 
             }
         }
-        
+
     }
+        if (viewModel.enableMoreOptions) {
+            MoreOptions(viewModel::statusMoreOptions,viewModel::addGameToUserList,viewModel::removeGameFromUserList,viewModel.gameID)
+        }
+    }
+    
 
 }
 
@@ -201,11 +208,11 @@ fun Portada(viewModel:GameDetailsViewModel){
 @Composable
 fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: ()-> Unit, deleteFromUserList: (String)-> Unit,gameID: String){
 
-    BoxWithConstraints(
+    Box(
         Modifier
             .fillMaxSize()
-            .background(Color(0x540A0A0A)) //TODO CAMBIAR ESTE COLOR A UNO CHULON ALOMEJON
-            .zIndex(1f), contentAlignment = Alignment.Center) {
+            .background(Color(0xCE0A0A0A)) //TODO CAMBIAR ESTE COLOR A UNO CHULON ALOMEJON
+            , contentAlignment = Alignment.Center) {
 
         Box(
             Modifier

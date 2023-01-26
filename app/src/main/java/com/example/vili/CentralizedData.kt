@@ -17,12 +17,12 @@ class CentralizedData {
         //Mas detalles
         var gameID:String = ""
 
-        public fun updateGameID(newGameID:String){
-            gameID = newGameID;
+        fun updateGameID(newGameID:String){
+            gameID = newGameID
         }
 
         @JvmName("getGameID1")
-        public fun getGameID():String{
+        fun getGameID():String{
             return gameID
         }
 
