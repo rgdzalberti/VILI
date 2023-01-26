@@ -214,6 +214,8 @@ fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: ()-> Unit, delet
             .background(Color(0xCE0A0A0A)) //TODO CAMBIAR ESTE COLOR A UNO CHULON ALOMEJON
             , contentAlignment = Alignment.Center) {
 
+        Button(modifier = Modifier.fillMaxSize().alpha(0f),onClick = { disableMoreOptions() }) {}
+
         Box(
             Modifier
                 .width(DeviceConfig.widthPercentage(80))

@@ -438,7 +438,11 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
 
 @Composable
 fun searchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: List<Game>, nav: NavController){
-    
+
+    Box(){
+
+        Button(modifier = Modifier.fillMaxSize().alpha(0f),onClick = { /*TODO*/ }) {}
+
     Column(
         Modifier
             .fillMaxHeight()
@@ -495,6 +499,7 @@ fun searchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: Li
         calculateSearchContents(searchText,gameList,nav)
 
 
+    }
     }
 
     
