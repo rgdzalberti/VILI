@@ -1,13 +1,9 @@
 package viliApp
 
 import android.annotation.SuppressLint
-import android.util.Log
-import android.util.Size
-import android.widget.LinearLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
-import androidx.annotation.FloatRange
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -15,54 +11,34 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Device
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.vili.R
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
-import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.model.mutation.Overlay
-import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.launch
 
 @Preview
 @Composable
@@ -135,7 +111,7 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
                         //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
                         //Sino que este menú se vuelva a plegar
                         BackPressHandler(viewModel::searchBackPressed)
-                        searchMenu(viewModel.searchText,viewModel::onSearchTextChange,viewModel.gameList,navController)
+                        SearchMenu(viewModel.searchText,viewModel::onSearchTextChange,viewModel.gameList,navController)
                     }
 
                     //MENU SEARCH
@@ -160,7 +136,7 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
                         //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
                         //Sino que este menú se vuelva a plegar
                         BackPressHandler(viewModel::settingsBackPressed)
-                        settingsMenu(viewModel::logOut, viewModel::switchSettings)
+                        SettingsMenu(viewModel::logOut, viewModel::switchSettings)
                     }
                 }
                 }
@@ -244,7 +220,7 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
 
     Column() {
 
-        topBar(switchSettings = { switchSettings() }, switchSearch = { switchSearch() }, nav = nav)
+        TopBar(switchSettings = { switchSettings() }, switchSearch = { switchSearch() }, nav = nav)
 
         LazyColumn(Modifier.fillMaxSize()) {
 
@@ -282,7 +258,7 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
                                 for (i in 0 until 10) {
                                     val game = gameList[i]
                                     Surface(elevation = 15.dp) {
-                                        gameBox(nav, game.id, game.name, game.imageURL)
+                                        GameBox(nav, game.id, game.name, game.imageURL)
                                     }
                                     Spacer(modifier = Modifier.width(10.dp))
                                 }
@@ -373,7 +349,7 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
                                 for (i in 10 until 20) {
                                     val game = gameList[i]
                                     Surface(elevation = 15.dp) {
-                                        gameBox(nav, game.id, game.name, game.imageURL)
+                                        GameBox(nav, game.id, game.name, game.imageURL)
                                     }
                                     Spacer(modifier = Modifier.width(10.dp))
                                 }
@@ -416,7 +392,7 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
                                 for (i in 0 until reccommList.size) {
                                     val game = reccommList[i]
                                     Surface(elevation = 15.dp) {
-                                        gameBox(nav, game.id, game.name, game.imageURL)
+                                        GameBox(nav, game.id, game.name, game.imageURL)
                                     }
                                     Spacer(modifier = Modifier.width(10.dp))
                                 }
@@ -437,11 +413,11 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
 }
 
 @Composable
-fun searchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: List<Game>, nav: NavController){
+fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: List<Game>, nav: NavController){
 
     Box(){
 
-        Button(modifier = Modifier.fillMaxSize().alpha(0f),onClick = { /*TODO*/ }) {}
+        Button(modifier = Modifier.fillMaxSize().alpha(0f),onClick = { /*EVITA HITBOXES DE ATRÁS*/ }) {}
 
     Column(
         Modifier
@@ -496,102 +472,17 @@ fun searchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: Li
         }
 
         //RESULTADOS
-        calculateSearchContents(searchText,gameList,nav)
+        //calculateSearchContents(searchText,gameList,nav)
+        LazyList(nav,searchText, gameList = gameList, isGameListB = true)
 
-
-    }
-    }
-
-    
-}
-
-@Composable
-fun calculateSearchContents(searchText: String,gameList: List<Game>, nav: NavController){
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Color(0xFF0A0A0A))
-        .padding(top = 15.dp)) {
-
-        //Primero hago una lista filtrando el término de búsqueda
-        var gameListFiltered = mutableListOf<Game>()
-
-        gameList.forEach {
-            if (it.name.lowercase().contains(searchText.lowercase())) {
-                gameListFiltered.add(it)
-            }
-        }
-
-        if (gameListFiltered.size != 0 ){
-            gameListFiltered = gameListFiltered.sortedBy { it.name } as MutableList<Game>
-        }
-
-
-        //Content
-        if (gameListFiltered.size != 0) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                var index = 0
-
-                item {
-                    repeat(if (gameListFiltered.size % 2 == 0) gameListFiltered.size / 2 else ((gameListFiltered.size - 1) / 2)) {
-
-                        Row() {
-                            Surface(elevation = 15.dp) {
-                                gameBox(
-                                    nav,
-                                    gameListFiltered[index].id,
-                                    gameListFiltered[index].name,
-                                    gameListFiltered[index].imageURL
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(30.dp))
-                            Surface(elevation = 15.dp) {
-                                gameBox(
-                                    nav,
-                                    gameListFiltered[index + 1].id,
-                                    gameListFiltered[index + 1].name,
-                                    gameListFiltered[index + 1].imageURL
-                                )
-                            }
-
-                            index = index + 2
-
-                        }
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
-
-                    if (gameListFiltered.size % 2 != 0 || gameListFiltered.size == 1) {
-
-                        Row() {
-                            Surface(elevation = 15.dp) {
-                                gameBox(
-                                    nav,
-                                    gameListFiltered[gameListFiltered.size - 1].id,
-                                    gameListFiltered[gameListFiltered.size - 1].name,
-                                    gameListFiltered[gameListFiltered.size - 1].imageURL
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(30.dp))
-                            gameBox(nav, "", "", "", 0, true)
-                        }
-
-                    }
-
-
-                }
-
-
-            }
 
         }
     }
 }
 
+
 @Composable
-fun settingsMenu(logOut:() -> Unit,switchSettings: () -> Unit){
+fun SettingsMenu(logOut:() -> Unit, switchSettings: () -> Unit){
 
     //TODO meter mas cosas?
 
@@ -642,7 +533,7 @@ fun settingsMenu(logOut:() -> Unit,switchSettings: () -> Unit){
 }
 
 @Composable
-fun topBar(switchSettings: () -> Unit, switchSearch: () -> Unit,nav:NavController){
+fun TopBar(switchSettings: () -> Unit, switchSearch: () -> Unit, nav:NavController){
 
         //TOPBAR
         Row(
