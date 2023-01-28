@@ -2,17 +2,19 @@ package viliApp
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.vili.R
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -26,7 +28,7 @@ fun previewGameList() {
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun gameList(navController: NavController,viewModel: GameListViewModel = hiltViewModel()) {
+fun gameList(navController: NavController, viewModel: GameListViewModel = hiltViewModel(), MainScreenViewModel:MainScreenViewModel = hiltViewModel()) {
 
     systemBarColor(color = Color(0xFF0A0A0A))
     getDeviceConfig()
@@ -43,8 +45,16 @@ fun gameList(navController: NavController,viewModel: GameListViewModel = hiltVie
 
     Column(modifier = Modifier
         .fillMaxWidth()
-        .height(DeviceConfig.heightPercentage(5))
+        .height(DeviceConfig.heightPercentage(10))
         .background(Color.Black)) {
+
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.5f)) {
+            TopBarList(goHome = MainScreenViewModel::updateIndex, dropDown = viewModel::sortList , nav = navController,viewModel.tabIndex)
+        }
+
 
         Row(
             Modifier
@@ -114,6 +124,115 @@ fun tabData(tabIndex: Int, updateTabIndex:(Int) -> Unit, pagerState: PagerState,
                     pagerState.scrollToPage(index)}
                           },
             )
+        }
+    }
+}
+
+@Composable
+fun TopBarList(goHome: (Int) -> Unit, dropDown: (Int) -> Unit, nav:NavController,page:Int){
+
+    //TOPBAR
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .height(DeviceConfig.heightPercentage(5))
+            .background(Color.Black),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    )
+    {
+        Box(
+            Modifier
+                .background(Color.Transparent) //Color(0xFF0A0A0A)
+                .fillMaxHeight()
+                .weight(0.33f)
+                .padding(start = 5.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            IconButton(onClick = { goHome(1) }) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.arrowback),
+                    "",
+                    modifier = Modifier.size(30.dp),
+                    tint = Color.White
+                )
+            }
+
+        }
+
+        Box(
+            Modifier
+                .background(Color.Transparent)
+                .fillMaxHeight()
+                .weight(0.33f)
+                .padding(end = 5.dp),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+
+            DropDownSort(sortList = dropDown,page)
+
+        }
+
+
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun DropDownSort(sortList: (Int) -> Unit, page: Int) {
+
+    var listItems = emptyList<String>()
+
+    if (page == 0){
+        listItems = listOf("Nombre", "Score")
+    }
+    else if (page==1){
+        listItems = listOf("Nombre")
+    }
+
+    var selectedItem by remember {
+        mutableStateOf(listItems[0])
+    }
+
+
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+
+    // the box
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {
+            expanded = !expanded
+        }
+    ) {
+
+        Icon(
+            imageVector = ImageVector.vectorResource(id = R.drawable.filterlist),
+            "",
+            modifier = Modifier.size(30.dp),
+            tint = Color.White
+        )
+
+        // menu
+        ExposedDropdownMenu(
+            modifier = Modifier.background(Color(0xFF1B1B1B)).width(100.dp),
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            listItems.forEach { selectedOption ->
+                // menu item
+                DropdownMenuItem(modifier = Modifier.background(Color(0xFF1B1B1B)),onClick = {
+                    selectedItem = selectedOption
+
+                    //Actualizo en mi viewModel el index seleccionado para cuando se confirme
+                    sortList(listItems.indexOf(selectedItem))
+
+                    expanded = false
+                }) {
+                    Text(text = selectedOption, color = Color.White)
+                }
+            }
         }
     }
 }

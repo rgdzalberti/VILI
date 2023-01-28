@@ -21,6 +21,7 @@ class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) 
 
     var tabIndex by savedStateHandle.saveable { mutableStateOf(0) }
 
+
     init {
 
         if (CentralizedData.gameList.value.isEmpty()) {
@@ -37,19 +38,37 @@ class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) 
         viewModelScope.launch {
             FBQuery.getUserGameList()
                 .onCompletion { CentralizedData.tellGameListToReload(false) }
-                .collect { CentralizedData.gameList.value = it.sortedByDescending { it.userScore } }
+                .collect { CentralizedData.gameList.value = it }
         }
 
         viewModelScope.launch {
             FBQuery.getUserGamePlanningList()
                 .onCompletion { CentralizedData.tellGameListToReload(false) }
-                .collect { CentralizedData.planningList.value = it.sortedBy { it.name } }
+                .collect { CentralizedData.planningList.value = it }
         }
 
     }
 
     fun updateTabData(newValue: Int){
         tabIndex = newValue
+    }
+
+    fun sortList(newValue: Int){
+
+        when(newValue){
+
+            0 -> {
+                if (tabIndex==0){CentralizedData.gameList.value = CentralizedData.gameList.value.sortedBy { it.name }}
+                else if (tabIndex==1){CentralizedData.planningList.value = CentralizedData.planningList.value.sortedBy { it.name }}
+
+            }
+
+            1 -> {
+                CentralizedData.gameList.value = CentralizedData.gameList.value.sortedByDescending { it.userScore }
+            }
+
+        }
+
     }
 
 

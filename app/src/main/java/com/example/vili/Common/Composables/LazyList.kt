@@ -14,6 +14,7 @@ import androidx.navigation.NavController
 @Composable
 fun LazyList(nav: NavController, searchText: String = "", gameList: List<Game> = emptyList(), userGameList: List<UserGame> = emptyList(), isGameListB: Boolean = false, isUserGameListB: Boolean = false){
 
+    //TODO PADDING + ABAJO DPS
 
     Box(modifier = Modifier
         .fillMaxSize()
