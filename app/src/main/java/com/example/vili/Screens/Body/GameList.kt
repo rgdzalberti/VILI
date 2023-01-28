@@ -12,13 +12,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.vili.R
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
@@ -49,27 +55,10 @@ fun gameList(navController: NavController,viewModel: GameListViewModel = hiltVie
         reloadGameList(viewModel::reloadList)
     }
 
-    //TODO hacer un topbar en condiciones
     Column(modifier = Modifier
         .fillMaxWidth()
-        .height(DeviceConfig.heightPercentage(10))
+        .height(DeviceConfig.heightPercentage(5))
         .background(Color.Black)) {
-        /*
-        Button(onClick = { viewModel.sortListByScore()}) {
-
-        }
-        Button(onClick = { viewModel.reloadList()}) {
-
-        }
-
-         */
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.5f)
-                .background(Color.Red)) {
-            Text(text = "aa")
-        }
 
         Row(
             Modifier
@@ -90,23 +79,16 @@ fun gameList(navController: NavController,viewModel: GameListViewModel = hiltVie
         horizontalAlignment = Alignment.CenterHorizontally
     )
     {
-        if (CentralizedData.gameList.value.size != 0) {
-
-            //WELTA
 
             HorizontalPager(count = 2,state = pagerState) { page ->
 
                 when(page){
-                    0 -> {viewModel.updateTabData(0);CalculateGamesContent(gameList = CentralizedData.gameList.value,navController)}
+                    0 -> {viewModel.updateTabData(0);CalculateGamesContent(gameList = CentralizedData.gameList.value,navController); }
                     1 -> {viewModel.updateTabData(1);CalculateGamesContentPlanning(gameList = CentralizedData.planningList.value,navController); }
                 }
 
             }
 
-
-
-
-        }
     }
 
 }
@@ -124,7 +106,9 @@ fun gameBox(
     var rating = ""
     repeat(Rating) { rating += "★" }
 
-        Box(
+    var modTitle = if (titulo.length >= 20) {"${titulo.subSequence(0,20)}..."} else titulo
+
+    Box(
             modifier = Modifier
                 .background(if (invisible) Color.Transparent else Color.Black)
                 .height(DeviceConfig.heightPercentage(30))
@@ -167,7 +151,8 @@ fun gameBox(
             ) {
 
                 Text(
-                    text = titulo,
+                    text = modTitle,
+                    maxLines = 1,
                     modifier = Modifier.padding(start = 5.dp, top = 5.dp),
                     color = Color.White
                 )
@@ -187,6 +172,8 @@ fun gameBox(
 @Composable
 fun CalculateGamesContent(gameList: List<UserGame>, nav: NavController) {
 
+
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -198,46 +185,50 @@ fun CalculateGamesContent(gameList: List<UserGame>, nav: NavController) {
 
             //Como los muestro en rows de 2 miro la longitud de la lista y la divido en 2
             //Además le sumo uno por si se queda en decimal que tire hacia arriba
-            repeat(if (gameList.size % 2 == 0) gameList.size / 2 else (gameList.size / 2) + 1) {
+            var repeatTimes = if (gameList.size % 2 == 0) gameList.size / 2 else (gameList.size / 2) + 1
+                repeat(repeatTimes) {
+                    item {
+                        Row()
+                        {
 
-                item {
-                    Row()
-                    {
-
-                        Surface(elevation = 15.dp) {
-                            gameBox(
-                                nav,
-                                gameList[index].id,
-                                gameList[index].name,
-                                gameList[index].imageURL
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(30.dp))
-
-                        //Si no existe este index se muestra una caja invible y no interactuable para mantener la interfaz organizada
-                        if (index != gameList.size - 1) {
                             Surface(elevation = 15.dp) {
                                 gameBox(
                                     nav,
-                                    gameList[index + 1].id,
-                                    gameList[index + 1].name,
-                                    gameList[index + 1].imageURL
+                                    gameList[index].id,
+                                    gameList[index].name,
+                                    gameList[index].imageURL,
+                                    gameList[index].userScore.toInt()
                                 )
                             }
-                        } else {
-                            gameBox(nav, "", "", "", 0, true)
+
+                            Spacer(modifier = Modifier.width(30.dp))
+
+                            //Si no existe este index se muestra una caja invible y no interactuable para mantener la interfaz organizada
+                            if (index != gameList.size - 1) {
+                                Surface(elevation = 15.dp) {
+                                    gameBox(
+                                        nav,
+                                        gameList[index + 1].id,
+                                        gameList[index + 1].name,
+                                        gameList[index + 1].imageURL,
+                                        gameList[index + 1].userScore.toInt()
+                                    )
+                                }
+                            } else {
+                                gameBox(nav, "", "", "", 0, true)
+                            }
+
                         }
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        index = index + 2
 
                     }
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    index = index + 2
-
                 }
+
             }
 
-        }
+
 }
 
 //TODO ESTO MU CUTRE MU CUTRE
@@ -327,7 +318,8 @@ fun tabData(tabIndex: Int, updateTabIndex:(Int) -> Unit, pagerState: PagerState,
                 selected = pagerState.currentPage == index,
                 onClick = {
                     scope.launch {
-                    pagerState.scrollToPage(index)} },
+                    pagerState.scrollToPage(index)}
+                          },
             )
         }
     }

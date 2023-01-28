@@ -1,15 +1,10 @@
 package viliApp
 
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,7 +13,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -26,9 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
@@ -179,7 +171,7 @@ fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hi
 
     }
         if (viewModel.enableMoreOptions) {
-            MoreOptions(viewModel::statusMoreOptions,viewModel::addGameToUserList,viewModel::removeGameFromUserList,viewModel.gameID,viewModel::dropDownValue,viewModel.ddValue,viewModel::addGameToUserPlanningList,viewModel::removeGameFromUserPlanningList,viewModel.planned,viewModel.completed,viewModel::updateCompleted,viewModel::updatePlanned)
+            MoreOptions(viewModel::statusMoreOptions,viewModel::addGameToUserList,viewModel::removeGameFromUserList,viewModel.gameID,viewModel::dropDownValue,viewModel.ddValue,viewModel::addGameToUserPlanningList,viewModel::removeGameFromUserPlanningList,viewModel.planned,viewModel.completed,viewModel::updateCompleted,viewModel::updatePlanned,viewModel.stars,viewModel::updateStars)
         }
     }
     
@@ -207,7 +199,7 @@ fun Portada(viewModel:GameDetailsViewModel){
 
 //TODO ABRIR MENU METER EN LISTA CHULON CHULON
 @Composable
-fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: ()-> Unit, deleteFromUserList: (String)-> Unit,gameID: String, updateDDV: (Int) -> Unit, ddValue: Int, saveToUserPlanningList: ()-> Unit, deleteFromUserPlanningList: (String)-> Unit, planned: Boolean, completed: Boolean, updateCompleted:()->Unit, updatePlanning:()->Unit){
+fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: (Int)-> Unit, deleteFromUserList: (String)-> Unit,gameID: String, updateDDV: (Int) -> Unit, ddValue: Int, saveToUserPlanningList: ()-> Unit, deleteFromUserPlanningList: (String)-> Unit, planned: Boolean, completed: Boolean, updateCompleted:()->Unit, updatePlanning:()->Unit,currentIndex: Int, updateStars: (Int) -> Unit){
 
     Box(
         Modifier
@@ -233,13 +225,17 @@ fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: ()-> Unit, delet
                 .fillMaxSize()
                 .alpha(0f), onClick = { /*ANTIMATERIA*/ }) {}
 
-            Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
-                
+            Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween, horizontalAlignment = Alignment.CenterHorizontally) {
+
+
                 Row(
                     Modifier
                         .height(40.dp)
                         .fillMaxWidth()
                         .background(Color(0xFF1B1B1B))) { Text(text = "")}
+
+                //INFO BODY
+                Column(Modifier, horizontalAlignment = Alignment.CenterHorizontally) {
 
 
                 Text(text = "Status", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
@@ -250,8 +246,13 @@ fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: ()-> Unit, delet
                         .clip(RoundedCornerShape(5.dp)),
                     verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    DropdownDemo(updateDDV)
+                    DropDownDetails(updateDDV)
                 }
+                    if (ddValue == 0 && !completed) {
+                        ratingStars(currentIndex, updateStars)
+                    }
+                }
+                //////////
                 
                 Row(
                     Modifier
@@ -272,7 +273,7 @@ fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: ()-> Unit, delet
                                 ConfirmButton("Eliminar",{deleteFromUserList(gameID);updateCompleted()})
                             }
                             else{
-                                ConfirmButton("Añadir", {saveToUserList(); updateCompleted()})
+                                ConfirmButton("Añadir", {saveToUserList(currentIndex); updateCompleted()})
                             }
 
                         }
@@ -321,7 +322,7 @@ fun GenreBox(genre: String, color: Color = Color.Black){
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DropdownDemo(updateDDV: (Int) -> Unit) {
+fun DropDownDetails(updateDDV: (Int) -> Unit) {
 
     val listItems = arrayOf("Completado", "Planning")
 
@@ -395,4 +396,30 @@ fun ConfirmButton(text: String, onClick: () -> Unit){
         Text(text = text, color = Color.Black)
     }
 }
+
+@Composable
+fun ratingStars(currentIndex: Int, updateStars: (Int) -> Unit) {
+
+    val starList = listOf<Int>(1,2,3,4,5)
+
+    Row() {
+        starList.forEach {
+            IconButton(onClick = { updateStars(it) }) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id =
+                        if (currentIndex>=it) {
+                            R.drawable.starfilled
+                        } else R.drawable.star
+                    ),
+                    "",
+                    modifier = Modifier.size(30.dp),
+                    tint = Color.Yellow
+                )
+            }
+        }
+    }
+
+}
+
+
 

@@ -29,6 +29,7 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
     //MoreOptions
     var completed by savedStateHandle.saveable { mutableStateOf(false) }
     var planned by savedStateHandle.saveable { mutableStateOf(false) }
+    var stars by savedStateHandle.saveable { mutableStateOf(0) }
 
     init {
         //Obtengo la referencia del juego primero en mi clase centralizada
@@ -44,6 +45,12 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
                     //Inicializo por primera vez mis variables completed y planned aquí
                     completed = CentralizedData.gameList.value.any { it.id == gameID }
                     planned = CentralizedData.planningList.value.any { it.id == gameID }
+
+                    //Si el juego está completado, esta query de abajo nunca dará null
+                    if (completed) {
+                        stars = CentralizedData.gameList.value.find { it.id == gameID }?.userScore!!.toInt()
+                    }
+
                 }
         }
 
@@ -90,6 +97,10 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
 
     fun updatePlanned(){
         planned = !planned
+    }
+
+    fun updateStars(newValue: Int){
+        stars = newValue
     }
 
 }
