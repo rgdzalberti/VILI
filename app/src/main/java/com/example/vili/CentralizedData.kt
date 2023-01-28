@@ -13,6 +13,7 @@ class CentralizedData {
     companion object{
 
         var gameList = mutableStateOf(listOf<UserGame>())
+        var planningList = mutableStateOf(listOf<Game>())
 
         //Mas detalles
         var gameID:String = ""

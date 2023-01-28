@@ -1,6 +1,8 @@
 package viliApp
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.Outline
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -15,6 +17,9 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import java.lang.reflect.GenericArrayType
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.*
 
 
@@ -73,7 +78,7 @@ class FBQuery {
                     } else {
                         //El campo no existe, así que lo creo y después añado los datos
                         val emptyArray = mutableListOf<UserGame>()
-                        reference.set(hashMapOf("userGameList" to emptyArray))
+                        //reference.set(hashMapOf("userGameList" to emptyArray))
                         reference.update("userGameList", FieldValue.arrayUnion(data))
                     }
                     CentralizedData.tellGameListToReload(true)
@@ -81,6 +86,30 @@ class FBQuery {
             }
 
 
+        }
+
+
+        fun saveGameToUserPlanningList(game: Game){
+
+            val db = Firebase.firestore
+            val data = Game("[${game.id}]","[${game.name}]","[${game.imageURL}]","[${game.avgDuration}]","[${game.description}]","[${game.developers}]","[${game.genres}]","[${game.releaseDate}]")
+
+            //Guardo la referencia al juego en el pertinente registro del usuario
+            val userUID = FirebaseAuth.getInstance().currentUser?.uid
+            val reference = db.collection("UserDATA").document(userUID.toString())
+
+            reference.get().addOnSuccessListener {
+                    if (it.get("userGamePlanningList") != null) {
+                        //Como el campo existe, actualizo los datos
+                        reference.update("userGamePlanningList", FieldValue.arrayUnion(data))
+                    } else {
+                        //El campo no existe, así que lo creo y después añado los datos
+                        val emptyArray = mutableListOf<Game>()
+                        //reference.set(hashMapOf("userGamePlanningList" to emptyArray))
+                        reference.update("userGamePlanningList", FieldValue.arrayUnion(data))
+                    }
+                    CentralizedData.tellGameListToReload(true)
+                }
         }
 
         //Obtener lista de juegos de usuario
@@ -121,7 +150,51 @@ class FBQuery {
                     else{
                         //El campo no existe, así que lo creo para la proxima vez
                         val emptyArray = mutableListOf<UserGame>()
-                        reference.set(hashMapOf("userGameList" to emptyArray))
+                        //reference.set(hashMapOf("userGameList" to emptyArray))
+                        reference.update(hashMapOf("userGameList" to emptyArray) as Map<String, Any>)
+                    }
+                    trySend(gameList)
+
+                }
+            awaitClose { channel.close() }
+        }
+
+        //Obtener lista de juegos de usuario
+        fun getUserGamePlanningList(): Flow<List<Game>> = callbackFlow{
+
+            val db = Firebase.firestore
+            val userUID = FirebaseAuth.getInstance().currentUser?.uid
+            val reference = db.collection("UserDATA").document(userUID.toString())
+
+            val gameList = mutableListOf<Game>()
+
+            reference.get()
+                .addOnSuccessListener { document ->
+
+                    if (document.get("userGamePlanningList") != null)
+                    {
+                        //Como el campo existe, saco los datos
+                        val gameEntry = document.get("userGamePlanningList") as List<*>
+
+                        gameEntry.forEach {
+
+                            val text = it.toString()
+                            var developers = text.substringAfter("developers=["); developers = developers.substringBefore("]")
+                            var releaseDate = text.substringAfter("releaseDate=["); releaseDate = releaseDate.substringBefore("]")
+                            var genres = text.substringAfter("genres=["); genres = genres.substringBefore("]")
+                            var imageURL = text.substringAfter("imageURL=["); imageURL = imageURL.substringBefore("]")
+                            var name = text.substringAfter("name=["); name = name.substringBefore("]")
+                            var description = text.substringAfter("description=["); description = description.substringBefore("]")
+                            var id = text.substringAfter("id=["); id = id.substringBefore("]")
+                            var avgDuration = text.substringAfter("avgDuration=["); avgDuration = avgDuration.substringBefore("]")
+
+                            gameList.add(Game(id,name,imageURL,avgDuration,description,developers,genres,releaseDate))
+                        }
+                    }
+                    else{
+                        //El campo no existe, así que lo creo para la proxima vez
+                        val emptyArray = mutableListOf<Game>()
+                        reference.update(hashMapOf("userGamePlanningList" to emptyArray) as Map<String, Any>)
                     }
                     trySend(gameList)
 
@@ -141,7 +214,27 @@ class FBQuery {
                     val newList = oldList.filter { !it.toString().contains(gameID) }
 
 
-                    reference.set(hashMapOf("userGameList" to newList))
+                    //reference.set(hashMapOf("userGameList" to newList))
+                    reference.update(hashMapOf("userGameList" to newList) as Map<String, Any>)
+                    CentralizedData.tellGameListToReload(true)
+                }
+
+        }
+
+        fun removeGameFromUserPlanningList(gameID: String){
+            val db = Firebase.firestore
+            val userUID = FirebaseAuth.getInstance().currentUser?.uid
+            val reference = db.collection("UserDATA").document(userUID.toString())
+
+
+            reference.get()
+                .addOnSuccessListener {
+                    val oldList = it.get("userGamePlanningList") as List<*>
+                    val newList = oldList.filter { !it.toString().contains(gameID) }
+
+
+                    //reference.set(hashMapOf("userGamePlanningList" to newList))
+                    reference.update(hashMapOf("userGamePlanningList" to newList) as Map<String, Any>)
                     CentralizedData.tellGameListToReload(true)
                 }
 
@@ -160,6 +253,23 @@ class FBQuery {
             trySend(gameBannerList)
 
             awaitClose { channel.close() }
+        }
+
+        //Si no existe la entrada de UserDATA para este usuario se crea
+        fun createUserData(){
+            val db = Firebase.firestore
+            val userUID = FirebaseAuth.getInstance().currentUser?.uid
+            val reference = db.collection("UserDATA").document(userUID.toString())
+
+            reference.get().addOnSuccessListener {
+                if (it.exists()){
+                    //Si existe no se hace nada
+                }
+                else {
+                    val emptyArray = mutableListOf<Game>()
+                    reference.set(mapOf("registerDATE" to Calendar.getInstance().time))
+                }
+            }
         }
 
 

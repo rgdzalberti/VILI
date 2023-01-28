@@ -1,18 +1,16 @@
 package viliApp
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -20,7 +18,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
@@ -178,7 +179,7 @@ fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hi
 
     }
         if (viewModel.enableMoreOptions) {
-            MoreOptions(viewModel::statusMoreOptions,viewModel::addGameToUserList,viewModel::removeGameFromUserList,viewModel.gameID)
+            MoreOptions(viewModel::statusMoreOptions,viewModel::addGameToUserList,viewModel::removeGameFromUserList,viewModel.gameID,viewModel::dropDownValue,viewModel.ddValue,viewModel::addGameToUserPlanningList,viewModel::removeGameFromUserPlanningList,viewModel.planned,viewModel.completed,viewModel::updateCompleted,viewModel::updatePlanned)
         }
     }
     
@@ -206,7 +207,7 @@ fun Portada(viewModel:GameDetailsViewModel){
 
 //TODO ABRIR MENU METER EN LISTA CHULON CHULON
 @Composable
-fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: ()-> Unit, deleteFromUserList: (String)-> Unit,gameID: String){
+fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: ()-> Unit, deleteFromUserList: (String)-> Unit,gameID: String, updateDDV: (Int) -> Unit, ddValue: Int, saveToUserPlanningList: ()-> Unit, deleteFromUserPlanningList: (String)-> Unit, planned: Boolean, completed: Boolean, updateCompleted:()->Unit, updatePlanning:()->Unit){
 
     Box(
         Modifier
@@ -214,28 +215,84 @@ fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: ()-> Unit, delet
             .background(Color(0xCE0A0A0A)) //TODO CAMBIAR ESTE COLOR A UNO CHULON ALOMEJON
             , contentAlignment = Alignment.Center) {
 
-        Button(modifier = Modifier.fillMaxSize().alpha(0f),onClick = { disableMoreOptions() }) {}
+        Button(modifier = Modifier
+            .fillMaxSize()
+            //Un boton invisible de fondo para que se cierre el menu cuando se clicka fuera
+            //Además actualizo el index del dropdown seleccionado a 0 pues se resetea al salir
+            .alpha(0f),onClick = { disableMoreOptions(); updateDDV(0) }) {}
 
         Box(
             Modifier
                 .width(DeviceConfig.widthPercentage(80))
                 .height(DeviceConfig.heightPercentage(40))
-                .background(Color.Red)) {
+                .clip(RoundedCornerShape(6.dp))
+                .background(Color(0xFF020202))) {
             Text(text = "aaa")
 
+            Button(modifier = Modifier
+                .fillMaxSize()
+                .alpha(0f), onClick = { /*ANTIMATERIA*/ }) {}
 
-            Column() {
-                Button(onClick = { disableMoreOptions() }) {
+            Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
+                
+                Row(
+                    Modifier
+                        .height(40.dp)
+                        .fillMaxWidth()
+                        .background(Color(0xFF1B1B1B))) { Text(text = "")}
+
+
+                Text(text = "Status", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                Column(
+                    Modifier
+                        .fillMaxHeight(0.35f)
+                        .fillMaxWidth(0.5f)
+                        .clip(RoundedCornerShape(5.dp)),
+                    verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    DropdownDemo(updateDDV)
+                }
+                
+                Row(
+                    Modifier
+                        .height(40.dp)
+                        .fillMaxWidth()
+                        .weight(1f, false)
+                        .background(Color(0xFF1B1B1B)),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End) {
+
+                    when(ddValue){
+
+                        //Completado //TODO MOVER ESTO A VIEWMODEL SI LIVE UPDATE
+                        0 -> {
+
+                            //Si ya está el juego en la lista se da la opción de eliminar
+                            if (completed){
+                                ConfirmButton("Eliminar",{deleteFromUserList(gameID);updateCompleted()})
+                            }
+                            else{
+                                ConfirmButton("Añadir", {saveToUserList(); updateCompleted()})
+                            }
+
+                        }
+
+                        //Planning
+                        1 -> {
+                            //Si ya está el juego en la lista se da la opción de eliminar
+                            if (planned){
+                                ConfirmButton("Eliminar",{deleteFromUserPlanningList(gameID); updatePlanning()})
+                            }
+                            else{
+                                ConfirmButton("Añadir", {saveToUserPlanningList(); updatePlanning()})
+                            }
+                        }
+
+                    }
+
 
                 }
 
-                Button(onClick = { saveToUserList() }) {
-                    Text("AÑADIR A LISTA USUARIO")
-                }
-
-                Button(onClick = { deleteFromUserList(gameID) }) {
-                    Text("BORRAR DE LA LISTA USUARIO")
-                }
             }
 
 
@@ -261,3 +318,81 @@ fun GenreBox(genre: String, color: Color = Color.Black){
     }
 
 }
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun DropdownDemo(updateDDV: (Int) -> Unit) {
+
+    val listItems = arrayOf("Completado", "Planning")
+
+    var selectedItem by remember {
+        mutableStateOf(listItems[0])
+    }
+
+
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+
+    // the box
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {
+            expanded = !expanded
+        }
+    ) {
+
+        // text field
+        TextField(
+            value = selectedItem,
+            textStyle = TextStyle.Default.copy(fontSize = 14.sp),
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(
+                    expanded = expanded,
+
+                )
+            },
+            colors = ExposedDropdownMenuDefaults.textFieldColors(
+                backgroundColor = Color(0xFF1B1B1B),
+                textColor = Color.White,
+                trailingIconColor =Color.White,
+                focusedTrailingIconColor = Color.White,
+                disabledLeadingIconColor = Color.White,
+                focusedIndicatorColor = Color(0xFF1B1B1B)
+               )
+        )
+
+        // menu
+        ExposedDropdownMenu(
+            modifier = Modifier.background(Color(0xFF1B1B1B)),
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            listItems.forEach { selectedOption ->
+                // menu item
+                DropdownMenuItem(modifier = Modifier.background(Color(0xFF1B1B1B)),onClick = {
+                    selectedItem = selectedOption
+
+                    //Actualizo en mi viewModel el index seleccionado para cuando se confirme
+                    updateDDV(listItems.indexOf(selectedItem))
+
+                    expanded = false
+                }) {
+                    Text(text = selectedOption, color = Color.White)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ConfirmButton(text: String, onClick: () -> Unit){
+    Button(modifier = Modifier
+        .fillMaxHeight(0.8f)
+        .padding(end = 5.dp), onClick = { onClick() },colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)) {
+        Text(text = text, color = Color.Black)
+    }
+}
+

@@ -19,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : ViewModel() {
 
-    //Si la lista esta vacía realiza una query que inicialmente está sorted por nombre
+    var tabIndex by savedStateHandle.saveable { mutableStateOf(0) }
+
 
     init {
 
@@ -45,6 +46,16 @@ class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) 
                 .collect { CentralizedData.gameList.value = it }
         }
 
+        viewModelScope.launch {
+            FBQuery.getUserGamePlanningList()
+                .onCompletion { CentralizedData.tellGameListToReload(false) }
+                .collect { CentralizedData.planningList.value = it }
+        }
+
+    }
+
+    fun updateTabData(newValue: Int){
+        tabIndex = newValue
     }
 
 }

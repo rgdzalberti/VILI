@@ -23,6 +23,13 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
     var listaGenres = listOf<String>()
     var moreGenres by savedStateHandle.saveable { mutableStateOf(false) }
 
+    //Valor del dropdown
+    var ddValue by savedStateHandle.saveable { mutableStateOf(0) }
+
+    //MoreOptions
+    var completed by savedStateHandle.saveable { mutableStateOf(false) }
+    var planned by savedStateHandle.saveable { mutableStateOf(false) }
+
     init {
         //Obtengo la referencia del juego primero en mi clase centralizada
 
@@ -31,7 +38,13 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
         //Hago una query en busca de información sobre este juego
         viewModelScope.launch{
             FBQuery.getGame(gameID)
-                .collect {gameData = it; listaGenres = gameData.genres.split(",")}
+                .collect {
+                    gameData = it; listaGenres = gameData.genres.split(",")
+
+                    //Inicializo por primera vez mis variables completed y planned aquí
+                    completed = CentralizedData.gameList.value.any { it.id == gameID }
+                    planned = CentralizedData.planningList.value.any { it.id == gameID }
+                }
         }
 
     }
@@ -40,6 +53,7 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
         enableMoreOptions = !enableMoreOptions
     }
 
+    //COMPLETED
     fun addGameToUserList(score: Int = 0, comment: String = ""){
         FBQuery.saveGameToUserList(gameData, score, comment)
     }
@@ -50,9 +64,32 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
         FBQuery.removeGameFromUserList(gameID)
 
     }
+    //PLANNING
+    fun addGameToUserPlanningList(score: Int = 0, comment: String = ""){
+        FBQuery.saveGameToUserPlanningList(gameData)
+    }
+
+    fun removeGameFromUserPlanningList(gameID: String){
+
+        var wasGameInList = false
+        FBQuery.removeGameFromUserPlanningList(gameID)
+
+    }
 
     fun updateMoreGenres(newValue: Boolean){
         moreGenres = newValue
+    }
+
+    fun dropDownValue(dropIndex: Int){
+        ddValue = dropIndex
+    }
+
+    fun updateCompleted(){
+        completed = !completed
+    }
+
+    fun updatePlanned(){
+        planned = !planned
     }
 
 }

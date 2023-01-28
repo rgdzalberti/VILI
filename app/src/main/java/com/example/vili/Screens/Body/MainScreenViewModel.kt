@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,6 +42,11 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
     var searchText by savedStateHandle.saveable { mutableStateOf("") }
 
     init {
+        //Si no existe UserDATA para este user lo creo
+        viewModelScope.launch {
+            FBQuery.createUserData()
+        }
+
         //Obtengo la lista de juegos para lanzar recomendacions en la pantalla principal
         viewModelScope.launch {
             FBQuery.getGameList()
@@ -49,12 +55,15 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
         }
 
         //Además inicializo la lista del jugador por si quiere ver sus estadisticas en el perfil
-        if (CentralizedData.gameList.value.isEmpty()) {
             viewModelScope.launch {
                 FBQuery.getUserGameList()
                     .collect { CentralizedData.gameList.value = it }
             }
-        }
+        //También la de planning por los mismos motivos
+            viewModelScope.launch {
+                FBQuery.getUserGamePlanningList()
+                    .collect { CentralizedData.planningList.value = it;}
+            }
 
         //Ahora inicializo la lista de banners
         viewModelScope.launch {
