@@ -119,8 +119,6 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : V
         }
     }
 
-    //TODO METER UN SIGN OUT EN EL VIEWMODEL CORRESPONDIENTE Firebase.auth.signOut()
-
     fun disableToast() {
         toastID = -1
     }

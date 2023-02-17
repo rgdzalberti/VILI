@@ -180,18 +180,6 @@ fun BottomBar(updateIndex: (Int) -> Unit, viewModel: MainScreenViewModel,showBot
         BottomNavigation(modifier = Modifier.fillMaxHeight(0.07f),elevation = 10.dp, backgroundColor = Color(0xDD050505)) {
 
             BottomNavigationItem(icon = {
-                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.person),"", modifier = Modifier.size(30.dp))
-
-            },
-                selected = (viewModel.selectedIndex == 0),
-                onClick = {
-                    updateIndex(0)
-                },
-                selectedContentColor = Color.Red,
-                unselectedContentColor = Color.White
-            )
-
-            BottomNavigationItem(icon = {
                 Icon(imageVector = Icons.Default.Home,"")
             },
                 selected = (viewModel.selectedIndex == 1),
@@ -484,7 +472,6 @@ fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: Li
 @Composable
 fun SettingsMenu(logOut:() -> Unit, switchSettings: () -> Unit){
 
-    //TODO meter mas cosas?
 
     Row(
         Modifier

@@ -44,8 +44,6 @@ fun PreviewLoginScreen() {
     LoginScreen(rememberNavController())
 }
 
-//var isLogging = mutableStateOf(true)
-
 @Composable
 fun LoginScreen(navController: NavController, viewModel : LoginViewModel = hiltViewModel()) {
 
@@ -136,7 +134,6 @@ fun showToast(toastID: Int,isLogging: Boolean,nav:NavController){
             {
                 toastMes = "Sesión Iniciada"
                 NavigatePop(navController = nav, destination = Destinations.Pantalla2.ruta)
-                //TODO BUG BLANK
             }
             1 -> toastMes = "Hay algún campo vacío"
             2 -> toastMes = "El formato del correo es incorrecto"

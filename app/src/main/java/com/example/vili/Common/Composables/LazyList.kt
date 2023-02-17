@@ -14,12 +14,11 @@ import androidx.navigation.NavController
 @Composable
 fun LazyList(nav: NavController, searchText: String = "", gameList: List<Game> = emptyList(), userGameList: List<UserGame> = emptyList(), isGameListB: Boolean = false, isUserGameListB: Boolean = false){
 
-    //TODO PADDING + ABAJO DPS
 
     Box(modifier = Modifier
         .fillMaxSize()
         .background(Color(0xFF0A0A0A))
-        .padding(top = 15.dp)) {
+        .padding(top = 8.dp)) {
 
         //Primero hago una lista filtrando el término de búsqueda (Para GameList)
         var gameListFiltered = filterByText(gameList,searchText)
@@ -126,7 +125,7 @@ fun LazyList(nav: NavController, searchText: String = "", gameList: List<Game> =
 
                     }
 
-
+                    Spacer(modifier = Modifier.height(50.dp))
                 }
 
 

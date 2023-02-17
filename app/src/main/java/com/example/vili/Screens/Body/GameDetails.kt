@@ -10,6 +10,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -97,15 +99,16 @@ fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hi
         Row(
             Modifier
                 .fillMaxWidth()
+                .background(Color(0xFF161616))
                 .height(DeviceConfig.heightPercentage(30))) {
             Portada(viewModel)
 
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(Modifier.matchParentSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
-                Text(text = viewModel.gameData.name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp, textAlign = TextAlign.Center)
+                Text(modifier = Modifier.padding(start = 3.dp, end = 3.dp),text = viewModel.gameData.name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp, textAlign = TextAlign.Center)
                 Text(text = viewModel.gameData.releaseDate, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     Spacer(modifier = Modifier.padding(top = 5.dp))
-                    if (viewModel.gameData.avgDuration.isNotBlank()) {GenreBox(genre ="${viewModel.gameData.avgDuration} H" , Color.Black)
+                    if (viewModel.gameData.avgDuration.isNotBlank()) {GenreBox(genre ="${viewModel.gameData.avgDuration} Horas" , Color.Black)
 
                     }
                 }
@@ -115,23 +118,30 @@ fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hi
         
         //BODY
 
+
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF161616),
+                        Color(0x9F3D2121)
+                    )
+                )
+            )){
         //Description
         Column(
             Modifier
                 .height(IntrinsicSize.Min)
                 .fillMaxWidth(1f)
-                .padding(top = 15.dp)
                 , horizontalAlignment = Alignment.CenterHorizontally) {
 
-            Box(modifier = Modifier
-                .clip(RoundedCornerShape(6.dp))
-                .background(Color.Black)
+            Row(modifier = Modifier
                 .fillMaxHeight()
-                .fillMaxWidth(0.97f)
-                .padding(5.dp)
+                .fillMaxWidth()
+                .background(Color.Transparent)
                 ){
-                //TODO responsible height + show more
-                Text(text = viewModel.gameData.description, color = Color.White, fontSize = 15.sp)
+                Text(modifier = Modifier.padding(5.dp),text = viewModel.gameData.description, color = Color.White, fontSize = 18.sp)
             }
         }
 
@@ -170,6 +180,8 @@ fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hi
         }
 
     }
+
+    }
         if (viewModel.enableMoreOptions) {
             MoreOptions(viewModel::statusMoreOptions,viewModel::addGameToUserList,viewModel::removeGameFromUserList,viewModel.gameID,viewModel::dropDownValue,viewModel.ddValue,viewModel::addGameToUserPlanningList,viewModel::removeGameFromUserPlanningList,viewModel.planned,viewModel.completed,viewModel::updateCompleted,viewModel::updatePlanned,viewModel.stars,viewModel::updateStars)
         }
@@ -180,31 +192,35 @@ fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hi
 
 @Composable
 fun Portada(viewModel:GameDetailsViewModel){
-    
-    Box(modifier = Modifier
-        .height(220.dp)
-        .width(160.dp)
-        .padding(5.dp)
-        .background(Color.Black)){
-        Image(
-            modifier = Modifier.fillMaxSize(),
-            painter = rememberAsyncImagePainter(viewModel.gameData.imageURL),
-            contentDescription = null,
-            contentScale = ContentScale.Crop
-        )
-    }
+
+
+        Box(modifier = Modifier
+            .height(220.dp)
+            .width(160.dp)
+            .padding(5.dp)
+            .background(Color.Black)){
+            Image(
+                modifier = Modifier.fillMaxSize(),
+                painter = rememberAsyncImagePainter(viewModel.gameData.imageURL),
+                contentDescription = null,
+                contentScale = ContentScale.Crop
+            )
+        }
+
+
+
 
     
 }
 
-//TODO ABRIR MENU METER EN LISTA CHULON CHULON
+
 @Composable
 fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: (Int)-> Unit, deleteFromUserList: (String)-> Unit,gameID: String, updateDDV: (Int) -> Unit, ddValue: Int, saveToUserPlanningList: ()-> Unit, deleteFromUserPlanningList: (String)-> Unit, planned: Boolean, completed: Boolean, updateCompleted:()->Unit, updatePlanning:()->Unit,currentIndex: Int, updateStars: (Int) -> Unit){
 
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(0xCE0A0A0A)) //TODO CAMBIAR ESTE COLOR A UNO CHULON ALOMEJON
+            .background(Color(0xCE0A0A0A))
             , contentAlignment = Alignment.Center) {
 
         Button(modifier = Modifier
@@ -265,7 +281,7 @@ fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: (Int)-> Unit, de
 
                     when(ddValue){
 
-                        //Completado //TODO MOVER ESTO A VIEWMODEL SI LIVE UPDATE
+                        //Completado
                         0 -> {
 
                             //Si ya está el juego en la lista se da la opción de eliminar
