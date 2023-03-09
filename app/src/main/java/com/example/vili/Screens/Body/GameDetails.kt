@@ -83,7 +83,7 @@ fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hi
                     viewModel.statusMoreOptions()
                 }) {
                     Icon(
-                        imageVector = ImageVector.vectorResource(id = R.drawable.edit),
+                        imageVector = ImageVector.vectorResource(id = com.example.vili.R.drawable.edit),
                         tint = Color.White,
                         contentDescription = "Visibility Icon"
                     )
