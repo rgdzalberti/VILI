@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import dagger.Module
@@ -23,6 +24,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import java.lang.Exception
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -34,11 +38,7 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : V
     var password by savedStateHandle.saveable { mutableStateOf("") }
     var repeatPassword by savedStateHandle.saveable { mutableStateOf("") }
 
-    //Para ser observado y mostrar toast
-    var toastID by savedStateHandle.saveable { mutableStateOf(-1) }
-
-
-    //var context = context
+    var popNContinue by savedStateHandle.saveable { mutableStateOf(false) }
 
     fun onEmailChange(newValue: String) {
         this.email = newValue
@@ -52,75 +52,52 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : V
         this.repeatPassword = newValue
     }
 
-    fun onLogInClick() {
-
-        var errorReturn = 0
-
-        val pattern: Pattern = Patterns.EMAIL_ADDRESS
-
-        if (!email.isNotBlank() || !password.isNotBlank()) {
-            errorReturn = 1
-            toastID = errorReturn
-        } else if (!pattern.matcher(email).matches()) {
-            errorReturn = 2
-            toastID = errorReturn
-        } else{
-            //LOGIN
+    fun onLogInClick(context: Context){
+        try {
             FirebaseAuth.getInstance()
-                .signInWithEmailAndPassword(email,password).addOnCompleteListener { task ->
-                    if (!task.isSuccessful) {
-                        try {
-                            throw task.exception!!;
-                        } catch (e: FirebaseAuthInvalidCredentialsException) {
-                            errorReturn = 7; toastID = errorReturn
-                        }
-
-                    } else toastID = errorReturn //Devuelve 0 en Login y cambio de pantalla
+                .signInWithEmailAndPassword(email, password)
+                .addOnFailureListener { exception ->
+                    val errorMessage = when (exception) {
+                        is FirebaseAuthUserCollisionException -> "Correo electrónico ya registrado"
+                        is FirebaseAuthWeakPasswordException -> "Contraseña demasiado débil"
+                        is FirebaseAuthInvalidCredentialsException -> "Credenciales no válidas"
+                        else -> "Error al crear la cuenta"
+                    }
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                 }
+                //Si no devuelve errores da un mensaje de éxito y pasa a la siguiente pantalla
+                .addOnSuccessListener { task ->
+                    Toast.makeText(context, "Logeado con éxito", Toast.LENGTH_SHORT).show()
+                    popNContinue = true
+                }
+        } catch (error: Exception) {
+            Toast.makeText(context, "No dejes campos vacios", Toast.LENGTH_SHORT).show()
         }
-
-
-
     }
 
-    fun onSignUp() {
-
-        var errorReturn = 0
-        val pattern: Pattern = Patterns.EMAIL_ADDRESS
-
-        if (!email.isNotBlank() || !password.isNotBlank() || !repeatPassword.isNotBlank()) {
-            errorReturn = 1
-            toastID = errorReturn
-        } else if (!pattern.matcher(email).matches()) {
-            errorReturn = 2
-            toastID = errorReturn
-        } else if (password.length < 6) {
-            errorReturn = 4
-            toastID = errorReturn
-        } else if (password != repeatPassword) {
-            errorReturn = 3
-            toastID = errorReturn
-        } else {
+    fun onSignUp(context: Context) {
+        try {
             FirebaseAuth.getInstance()
                 .createUserWithEmailAndPassword(email, password)
-
-                .addOnCompleteListener { task ->
-                    if (!task.isSuccessful) {
-                        try {
-                            throw task.exception!!;
-                        } catch (e: FirebaseAuthUserCollisionException) {
-                            errorReturn = 6; toastID = errorReturn; Log.i("Login",
-                                task.exception.toString()
-                            )
-                        }
-
-                    } else toastID = errorReturn //Devuelve 0 en Login y cambio de pantalla
+                .addOnFailureListener { exception ->
+                    val errorMessage = when (exception) {
+                        is FirebaseAuthUserCollisionException -> "Correo electrónico ya registrado"
+                        is FirebaseAuthWeakPasswordException -> "Contraseña demasiado débil"
+                        is FirebaseAuthInvalidCredentialsException -> "Credenciales no válidas"
+                        else -> "Error al crear la cuenta"
+                    }
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                 }
+                //Si no devuelve errores da un mensaje de éxito y pasa a la siguiente pantalla
+                .addOnSuccessListener { task ->
+                    Toast.makeText(context, "Registrado con éxito", Toast.LENGTH_SHORT).show()
+                    popNContinue = true
+                }
+        } catch (error: java.lang.Exception) {
+            Toast.makeText(context, "No dejes campos vacios", Toast.LENGTH_SHORT).show()
         }
+
     }
 
-    fun disableToast() {
-        toastID = -1
-    }
 }
 

@@ -1,6 +1,7 @@
 package viliApp
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
@@ -8,12 +9,13 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -39,6 +41,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.vili.R
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.launch
 
 @Preview
 @Composable
@@ -86,7 +90,16 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
                                 viewModel.bannerList,
                                 viewModel.recommendedList,
                                 viewModel::switchSearch,
-                                viewModel::switchSettings
+                                viewModel::switchSettings,
+                                viewModel.clickable,
+                                viewModel::updatePendingValues,
+                                viewModel::updateLazyState,
+                                viewModel.rowState0,
+                                viewModel.rowState1,
+                                viewModel.rowState2,
+                                viewModel.pager,
+                                viewModel.banner,
+                                viewModel.columnState,
                             )
                     }
 
@@ -204,13 +217,42 @@ fun BottomBar(updateIndex: (Int) -> Unit, viewModel: MainScreenViewModel,showBot
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<GameBanner>, reccommList: List<Game>,switchSearch: () -> Unit, switchSettings: () -> Unit){
+fun MainScreenSkin(
+    gameList: List<Game>,
+    nav:NavController, bannerList: List<GameBanner>, reccommList: List<Game>,
+    switchSearch: () -> Unit, switchSettings: () -> Unit, clickable: Boolean, updatePendingValues:()->Unit,
+    updateLazyState:(Int,Int) -> Unit,
+    rowState0: Int,
+    rowState1: Int,
+    rowState2: Int,
+    pagerState:Int,
+    bannerState:Int,
+    columnState:Int
+
+){
+
+
+    val stateList = listOf<LazyListState>(rememberLazyListState(),rememberLazyListState(),rememberLazyListState(),rememberLazyListState(),rememberLazyListState(),rememberLazyListState())
+    val pagerController = rememberPagerState()
+
+    LaunchedEffect(Unit) {
+        stateList[0].scrollToItem(0,rowState0)
+        stateList[1].scrollToItem(0,rowState1)
+        stateList[2].scrollToItem(0,rowState2)
+        stateList[3].scrollToItem(0,columnState)
+        pagerController.scrollToPage(pagerState)
+    }
 
     Column() {
 
         TopBar(switchSettings = { switchSettings() }, switchSearch = { switchSearch() }, nav = nav)
 
-        LazyColumn(Modifier.fillMaxSize()) {
+        LazyColumn(
+            Modifier
+                .fillMaxSize(),
+            state = stateList[3]
+                ) {
+            updateLazyState(5,stateList[3].firstVisibleItemScrollOffset)
 
             item {
 
@@ -239,8 +281,9 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
                         Modifier
                             .fillMaxSize()
                             .padding(5.dp),
+                        state = stateList[0]
                     ) {
-
+                        updateLazyState(0,stateList[0].firstVisibleItemScrollOffset)
                         item {
                             Row() {
                                 for (i in 0 until 10) {
@@ -281,14 +324,18 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
                             ) {
 
 
-                                HorizontalPager(count = 3) { page ->
+                                HorizontalPager(count = 3, state = pagerController) { page ->
+                                    updateLazyState(3,pagerController.currentPage)
                                     Image(
                                         modifier = Modifier
                                             .padding(top = 20.dp, bottom = 20.dp)
                                             .fillMaxSize()
                                             .clickable {
-                                                CentralizedData.updateGameID(bannerList[page].gameID)
-                                                nav.navigate(Destinations.Pantalla3.ruta)
+                                                if (clickable) {
+                                                    CentralizedData.updateGameID(bannerList[page].gameID)
+                                                    nav.navigate(Destinations.Pantalla3.ruta)
+                                                    updatePendingValues()
+                                                }
                                             },
                                         painter = rememberAsyncImagePainter(bannerList[page].imageURL),
                                         contentDescription = null,
@@ -329,9 +376,10 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
                     LazyRow(
                         Modifier
                             .fillMaxSize()
-                            .padding(8.dp)
+                            .padding(8.dp),
+                        state = stateList[1]
                     ) {
-
+                        updateLazyState(1,stateList[1].firstVisibleItemScrollOffset)
                         item {
                             Row() {
                                 for (i in 10 until 20) {
@@ -372,9 +420,10 @@ fun MainScreenSkin(gameList: List<Game>,nav:NavController, bannerList : List<Gam
                     LazyRow(
                         Modifier
                             .fillMaxSize()
-                            .padding(8.dp)
+                            .padding(8.dp),
+                        state = stateList[2]
                     ) {
-
+                        updateLazyState(2,stateList[2].firstVisibleItemScrollOffset)
                         item {
                             Row() {
                                 for (i in 0 until reccommList.size) {
@@ -405,14 +454,15 @@ fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: Li
 
     Box(){
 
-        Button(modifier = Modifier.fillMaxSize().alpha(0f),onClick = { /*EVITA HITBOXES DE ATRÁS*/ }) {}
+        Button(modifier = Modifier
+            .fillMaxSize()
+            .alpha(0f),onClick = { /*EVITA HITBOXES DE ATRÁS*/ }) {}
 
     Column(
         Modifier
             .fillMaxHeight()
             .fillMaxWidth(1f)
-            .background(Color.Transparent)
-            //Color(0xFF0A0A0A)
+            .background(Color(0xFF0A0A0A))
             ,
     ) {
 
@@ -425,6 +475,7 @@ fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: Li
 
                 ,
         contentAlignment = Alignment.Center) {
+
 
             //TEXTFIELD
             Column()
@@ -469,6 +520,7 @@ fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: Li
 }
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SettingsMenu(logOut:() -> Unit, switchSettings: () -> Unit){
 
@@ -487,7 +539,14 @@ fun SettingsMenu(logOut:() -> Unit, switchSettings: () -> Unit){
                 Modifier
                     .fillMaxHeight()
                     .fillMaxWidth()
-                    .background(Color(0xFF000000)),
+                    .background(Color(0xFF000000))
+                    .swipeable(
+                        state = rememberSwipeableState(initialValue = "On"),
+                        orientation = Orientation.Horizontal,
+                        anchors = mapOf(0f to "On", 150f to "Off", 300f to "Locked"),
+                        thresholds = { _, _ -> FractionalThreshold(0.5f) }
+                    )
+                ,
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

@@ -1,18 +1,16 @@
 package viliApp
 
 import android.util.Log
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
-import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -110,5 +108,47 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
     fun onSearchTextChange(newValue: String) {
         this.searchText = newValue
     }
+
+    //region BugFix Spam Banner
+    var clickable by savedStateHandle.saveable { mutableStateOf(true) }
+    var clickableDelay by savedStateHandle.saveable { mutableStateOf(false) }
+    fun updatePendingValues(){
+        clickable = !clickable
+        clickableDelay = !clickableDelay
+
+        if (clickableDelay) {
+            viewModelScope.launch {
+                delay(500)
+                clickable = true
+                clickableDelay = false
+            }
+        }
+    }
+    //endregion
+
+    //region ScrollStates
+
+    var rowState0 by savedStateHandle.saveable { mutableStateOf(0) }
+    var rowState1 by savedStateHandle.saveable { mutableStateOf(0) }
+    var rowState2 by savedStateHandle.saveable { mutableStateOf(0) }
+    var pager by savedStateHandle.saveable { mutableStateOf(0) }
+    var banner by savedStateHandle.saveable { mutableStateOf(0) }
+    var columnState by savedStateHandle.saveable { mutableStateOf(0) }
+
+    fun updateLazyState(index: Int, state: Int){
+
+        when{
+            index == 0 -> {rowState0 = state}
+            index == 1 -> {rowState1 = state}
+            index == 2 -> {rowState2 = state}
+            index == 3 -> {pager = state}
+            index == 4 -> {banner = state}
+            index == 5 -> {columnState = state}
+        }
+
+    }
+
+
+    //endregion
 
 }

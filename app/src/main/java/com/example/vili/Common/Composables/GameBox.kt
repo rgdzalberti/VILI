@@ -7,14 +7,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun GameBox(
@@ -23,7 +29,8 @@ fun GameBox(
     titulo: String = "",
     imageURL: String = "",
     Rating: Int = 0,
-    invisible: Boolean = false
+    invisible: Boolean = false,
+    viewModel: GameBoxViewModel = hiltViewModel()
 ) {
 
     var rating = ""
@@ -55,15 +62,20 @@ fun GameBox(
             Image(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clickable {
-                        CentralizedData.updateGameID(key)
-                        nav.navigate(Destinations.Pantalla3.ruta)
+                    .clickable
+                    {
+                        if (viewModel.clickable) {
+                            CentralizedData.updateGameID(key)
+                            nav.navigate(Destinations.Pantalla3.ruta)
+                            viewModel.updatePendingValues()
+                        }
                     },
                 painter = rememberAsyncImagePainter(imageURL),
                 contentDescription = null,
                 contentScale = ContentScale.Crop
             )
         }
+
 
         //Columna semitransparente con el nombre y puntuación
         Column(

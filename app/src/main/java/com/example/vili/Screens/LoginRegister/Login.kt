@@ -1,7 +1,8 @@
 package viliApp
 
-import android.util.Log
+import android.content.Context
 import android.widget.Toast
+import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -53,7 +55,11 @@ fun LoginScreen(navController: NavController, viewModel : LoginViewModel = hiltV
     systemBarColor(color = Color(0xFF0A0A0A))
     getDeviceConfig()
 
-
+    //Si el ViewModel recibe la orden de cambiar de pantalla aquí se cumple
+    if (viewModel.popNContinue){
+        viewModel.popNContinue = false
+        NavigatePop(navController = navController, destination = Destinations.Pantalla2.ruta)
+    }
 
     //Everything Container
     Column(
@@ -76,7 +82,7 @@ fun LoginScreen(navController: NavController, viewModel : LoginViewModel = hiltV
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            logo()
+            Logo()
         }
 
         Column(
@@ -101,14 +107,7 @@ fun LoginScreen(navController: NavController, viewModel : LoginViewModel = hiltV
 
                 ////////////////
 
-                loginFields(isLogging, { isLogging = !isLogging },viewModel.email,viewModel.password,viewModel.repeatPassword,viewModel::onEmailChange,viewModel::onPasswordChange,viewModel::onRepeatPasswordChange, viewModel::onLogInClick, viewModel::onSignUp)
-
-
-                if (viewModel.toastID != -1){
-                    showToast(viewModel.toastID,isLogging,navController)
-                    viewModel.disableToast()
-                }
-
+                LoginFields(isLogging, { isLogging = !isLogging },viewModel.email,viewModel.password,viewModel.repeatPassword,viewModel::onEmailChange,viewModel::onPasswordChange,viewModel::onRepeatPasswordChange, viewModel::onLogInClick, viewModel::onSignUp,navController)
 
 
             }
@@ -120,72 +119,43 @@ fun LoginScreen(navController: NavController, viewModel : LoginViewModel = hiltV
 
 }
 
-
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun showToast(toastID: Int,isLogging: Boolean,nav:NavController){
-
-    //Un toast con más información
-    var toastMes = ""
-
-    if (isLogging){
-        when(toastID){
-
-            0 ->
-            {
-                toastMes = "Sesión Iniciada"
-                NavigatePop(navController = nav, destination = Destinations.Pantalla2.ruta)
-            }
-            1 -> toastMes = "Hay algún campo vacío"
-            2 -> toastMes = "El formato del correo es incorrecto"
-            3 -> toastMes = "El usuario no existe"
-            6 -> toastMes = "No existe este usuario"
-            7 -> toastMes = "Datos incorrectos"
-        }
-    }
-    else
-        when(toastID){
-            0 ->
-            {
-                toastMes = "Registrado con éxito"
-                NavigatePop(navController = nav, destination = Destinations.Pantalla2.ruta)
-            }
-            1 -> toastMes = "No dejes campos vacíos"
-            2 -> toastMes = "El formato del email es incorrecto"
-            3 -> toastMes = "Las contraseñas no coinciden"
-            4 -> toastMes = "La contraseña es demasiado corta"
-            6 -> toastMes = "Ya existe un usuario con ese correo"
-        }
-
-    Toast.makeText(LocalContext.current, toastMes, Toast.LENGTH_SHORT).show()
-}
-
-
-
-@Composable
-fun logo() {
+fun Logo() {
 
     val image: Painter = painterResource(id = R.drawable.logovilipng)
 
-    Image(painter = image, contentDescription = "logo") //TODO animar logo con keyframes quiza spring linear fading
+    var startAnimation by remember { mutableStateOf(false) }
+    //Cuando la pantalla carga le digo que lance las animaciones
+    LaunchedEffect(Unit) { startAnimation = true }
+
+    AnimatedVisibility(visible = startAnimation,
+        enter = slideInVertically(initialOffsetY = { -40 }) + expandVertically(
+            expandFrom = Alignment.Top
+        ) + scaleIn(
+            transformOrigin = TransformOrigin(0.5f, 0f)
+        ) + fadeIn(initialAlpha = 0.3f),
+        exit = fadeOut()) {
+        Image(painter = image, contentDescription = "logo")
+    }
 
 
 }
 
 
 @Composable
-fun loginFields(isLogging: Boolean, toggleLogin: () -> Unit, email:String, password:String, repeatPassword:String, onEmailChange: (String) -> Unit,onPasswordChange: (String) -> Unit,onRepeatPasswordChange: (String) -> Unit,onLogin: () -> Unit,onSignUp: () -> Unit) {
+fun LoginFields(isLogging: Boolean, toggleLogin: () -> Unit, email:String, password:String, repeatPassword:String, onEmailChange: (String) -> Unit, onPasswordChange: (String) -> Unit, onRepeatPasswordChange: (String) -> Unit, onLogin: (Context) -> Unit, onSignUp: (Context) -> Unit, nav: NavController) {
     EmailTextField(email,onEmailChange)
     PasswordTextField(password,onPasswordChange)
     if (!isLogging) {
         ConfirmPasswordTextField(repeatPassword,onRepeatPasswordChange)
     }
     Spacer(Modifier.height(heightPercentage(3)))
-    validateButton(isLogging,onLogin,onSignUp)
+    validateButton(nav,isLogging,onLogin,onSignUp)
     ClickableText(isLogging, toggleLogin)
 
 
 }
-
 
 @Composable
 fun EmailTextField(uiState: String, onValueChange: (String) -> Unit) {
@@ -222,8 +192,6 @@ fun EmailTextField(uiState: String, onValueChange: (String) -> Unit) {
             )
     }
 }
-
-
 @Composable
 fun PasswordTextField(uiState: String, onValueChange: (String) -> Unit) {
     Column(
@@ -284,9 +252,8 @@ fun PasswordTextField(uiState: String, onValueChange: (String) -> Unit) {
         )
     }
 }
-
 @Composable
-fun ConfirmPasswordTextField(uiState: String, onValueChange: (String) -> Unit) {
+fun ConfirmPasswordTextField(text: String, onValueChange: (String) -> Unit) {
     Column(
         modifier = Modifier.padding(horizontal = 25.dp),
 
@@ -302,7 +269,7 @@ fun ConfirmPasswordTextField(uiState: String, onValueChange: (String) -> Unit) {
             painterResource(id = R.drawable.hide)
 
         OutlinedTextField(
-            value = uiState,
+            value = text,
             maxLines = 1,
             singleLine = true,
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -345,15 +312,19 @@ fun ConfirmPasswordTextField(uiState: String, onValueChange: (String) -> Unit) {
         )
     }
 }
-
 @Composable
-fun validateButton(isLogging: Boolean,onLogin: () -> Unit,onSignUp: () -> Unit) {
+fun validateButton(nav: NavController,isLogging: Boolean,onLogin: (Context) -> Unit,onSignUp: (Context) -> Unit) {
 
+    val context = LocalContext.current
 
     Button(
-        onClick =
-        if (isLogging) onLogin else onSignUp,
-
+        onClick ={
+            if (isLogging) {
+                onLogin(context)
+            } else {
+                onSignUp(context)
+            }
+        },
         colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
     ) {
 

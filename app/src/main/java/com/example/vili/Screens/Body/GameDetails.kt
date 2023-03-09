@@ -141,7 +141,7 @@ fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hi
                 .fillMaxWidth()
                 .background(Color.Transparent)
                 ){
-                Text(modifier = Modifier.padding(5.dp),text = viewModel.gameData.description, color = Color.White, fontSize = 18.sp)
+                Text(modifier = Modifier.padding(5.dp),text = viewModel.gameData.description, color = Color.White, fontSize = 15.sp)
             }
         }
 

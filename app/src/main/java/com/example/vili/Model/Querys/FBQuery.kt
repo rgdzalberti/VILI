@@ -28,7 +28,7 @@ class FBQuery {
     companion object {
 
         //Como hacer una query no es instantanea necesitamos hacer uso de coroutines
-        //Para ello utilizaremos Flow, un colector de datos asincrono
+        //Para ello utilizaremos Flow, un colector de datos asíncrono
         //Esto significa que no utiliza la CPU principal para conseguir los datos
         //Y por tanto que no se congela la aplicación hasta que carguen los datos
 
