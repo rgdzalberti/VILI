@@ -1,16 +1,13 @@
 package viliApp
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.*
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -27,11 +24,14 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,17 +42,19 @@ import com.example.vili.R
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 
 @Preview
 @Composable
-fun PreviewMainScreen(){
+fun PreviewMainScreen() {
     HomeScreen(rememberNavController())
 }
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hiltViewModel() ){
+fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hiltViewModel()) {
 
     getDeviceConfig()
     systemBarColor(color = Color(0xFF0A0A0A))
@@ -60,29 +62,35 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
 
     Scaffold(
         //topBar = { topBar(switchSettings = viewModel::switchSettings, switchSearch = viewModel::switchSearch, nav = navController) },
-        bottomBar = {BottomBar(viewModel::updateIndex,viewModel,viewModel.bottomBar)},
+        bottomBar = { BottomBar(viewModel::updateIndex, viewModel, viewModel.bottomBar) },
 
 
-    ) {
+        ) {
         Column(
             Modifier
                 .fillMaxSize()
-                .background(Color(0xFF0A0A0A))) {
+                .background(Color(0xFF0A0A0A))
+        ) {
 
 
             //Depende del index seleccionado abajo la pantalla se recomposeará
 
-            when(viewModel.selectedIndex) {
+            when (viewModel.selectedIndex) {
 
                 0 -> {}
                 1 -> {
-                    Box(){
+                    Box() {
 
-                    //Compruebo si el usuario le da al boton de desloguear para cambiar la pantalla y popearla
-                    if (viewModel.logOutnPop){NavigatePopLogOut(navController = navController, destination = Destinations.Pantalla1.ruta)}
+                        //Compruebo si el usuario le da al boton de desloguear para cambiar la pantalla y popearla
+                        if (viewModel.logOutnPop) {
+                            NavigatePopLogOut(
+                                navController = navController,
+                                destination = Destinations.Pantalla1.ruta
+                            )
+                        }
 
-                    //MENU SETTINGS
-                    if (viewModel.gameList.isNotEmpty()) {
+                        //MENU SETTINGS
+                        if (viewModel.gameList.isNotEmpty()) {
 
                             MainScreenSkin(
                                 viewModel.gameList,
@@ -101,62 +109,54 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
                                 viewModel.banner,
                                 viewModel.columnState,
                             )
-                    }
+                        }
 
-                    //MENU SEARCH
+                        //MENU SEARCH
                         androidx.compose.animation.AnimatedVisibility(
-                        visible = viewModel.enableSearchMenu,
-                        enter = slideInHorizontally(
-                            initialOffsetX = { fullWidth -> +fullWidth },
-                            animationSpec = tween(
-                                durationMillis = 500,
-                                easing = LinearOutSlowInEasing
+                            visible = viewModel.enableSearchMenu, enter = slideInHorizontally(
+                                initialOffsetX = { fullWidth -> +fullWidth }, animationSpec = tween(
+                                    durationMillis = 500, easing = LinearOutSlowInEasing
+                                )
+                            ), exit = slideOutHorizontally(
+                                targetOffsetX = { fullWidth -> +fullWidth }, animationSpec = tween(
+                                    durationMillis = 300, easing = FastOutLinearInEasing
+                                )
                             )
-                        ),
-                        exit = slideOutHorizontally(
-                            targetOffsetX = { fullWidth -> +fullWidth },
-                            animationSpec = tween(
-                                durationMillis = 300,
-                                easing = FastOutLinearInEasing
+                        ) {
+                            //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
+                            //Sino que este menú se vuelva a plegar
+                            BackPressHandler(viewModel::searchBackPressed)
+                            SearchMenu(
+                                viewModel.searchText,
+                                viewModel::onSearchTextChange,
+                                viewModel.gameList,
+                                navController
                             )
-                        )
-                    ) {
-                        //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
-                        //Sino que este menú se vuelva a plegar
-                        BackPressHandler(viewModel::searchBackPressed)
-                        SearchMenu(viewModel.searchText,viewModel::onSearchTextChange,viewModel.gameList,navController)
-                    }
+                        }
 
-                    //MENU SEARCH
+                        //MENU SEARCH
 
                         androidx.compose.animation.AnimatedVisibility(
-                        visible = viewModel.enableSettingsMenu,
-                        enter = slideInHorizontally(
-                            initialOffsetX = { fullWidth -> -fullWidth },
-                            animationSpec = tween(
-                                durationMillis = 300,
-                                easing = LinearOutSlowInEasing
+                            visible = viewModel.enableSettingsMenu, enter = slideInHorizontally(
+                                initialOffsetX = { fullWidth -> -fullWidth }, animationSpec = tween(
+                                    durationMillis = 300, easing = LinearOutSlowInEasing
+                                )
+                            ), exit = slideOutHorizontally(
+                                targetOffsetX = { fullWidth -> -fullWidth }, animationSpec = tween(
+                                    durationMillis = 200, easing = FastOutLinearInEasing
+                                )
                             )
-                        ),
-                        exit = slideOutHorizontally(
-                            targetOffsetX = { fullWidth -> -fullWidth },
-                            animationSpec = tween(
-                                durationMillis = 200,
-                                easing = FastOutLinearInEasing
-                            )
-                        )
-                    ) {
-                        //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
-                        //Sino que este menú se vuelva a plegar
-                        BackPressHandler(viewModel::settingsBackPressed)
-                        SettingsMenu(viewModel::logOut, viewModel::switchSettings)
+                        ) {
+                            //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
+                            //Sino que este menú se vuelva a plegar
+                            BackPressHandler(viewModel::settingsBackPressed)
+                            SettingsMenu(viewModel::logOut, viewModel::switchSettings)
+                        }
                     }
-                }
                 }
 
 
-                2 ->
-                {
+                2 -> {
                     gameList(navController)
                 }
 
@@ -167,50 +167,45 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
     }
 
 
-    
 }
 
 @Composable
-fun BottomBar(updateIndex: (Int) -> Unit, viewModel: MainScreenViewModel,showBottom: Boolean) {
+fun BottomBar(updateIndex: (Int) -> Unit, viewModel: MainScreenViewModel, showBottom: Boolean) {
 
     AnimatedVisibility(
-        visible = showBottom,
-        enter = slideInVertically(
-            initialOffsetY = { fullHeight -> +fullHeight },
-            animationSpec = tween(
-                durationMillis = 300,
-                easing = LinearOutSlowInEasing
+        visible = showBottom, enter = slideInVertically(
+            initialOffsetY = { fullHeight -> +fullHeight }, animationSpec = tween(
+                durationMillis = 300, easing = LinearOutSlowInEasing
             )
-        ),
-        exit = slideOutVertically(
-            targetOffsetY = { fullHeight -> +fullHeight  },
-            animationSpec = tween(
-                durationMillis = 300,
-                easing = FastOutLinearInEasing
+        ), exit = slideOutVertically(
+            targetOffsetY = { fullHeight -> +fullHeight }, animationSpec = tween(
+                durationMillis = 300, easing = FastOutLinearInEasing
             )
         )
-    ){
-        BottomNavigation(modifier = Modifier.fillMaxHeight(0.07f),elevation = 10.dp, backgroundColor = Color(0xDD050505)) {
+    ) {
+        BottomNavigation(
+            modifier = Modifier.fillMaxHeight(0.07f),
+            elevation = 10.dp,
+            backgroundColor = Color(0xDD050505)
+        ) {
 
             BottomNavigationItem(icon = {
-                Icon(imageVector = Icons.Default.Home,"")
-            },
-                selected = (viewModel.selectedIndex == 1),
-                onClick = {
-                    updateIndex(1)
-                },
-                selectedContentColor = Color.Red,
-                unselectedContentColor = Color.White)
+                Icon(imageVector = Icons.Default.Home, "")
+            }, selected = (viewModel.selectedIndex == 1), onClick = {
+                updateIndex(1)
+            }, selectedContentColor = Color.Red, unselectedContentColor = Color.White
+            )
 
             BottomNavigationItem(icon = {
-                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.list),"", modifier = Modifier.size(30.dp))
-            },
-                selected = (viewModel.selectedIndex == 2),
-                onClick = {
-                    updateIndex(2)
-                },
-                selectedContentColor = Color.Red,
-                unselectedContentColor = Color.White)
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.list),
+                    "",
+                    modifier = Modifier.size(30.dp)
+                )
+            }, selected = (viewModel.selectedIndex == 2), onClick = {
+                updateIndex(2)
+            }, selectedContentColor = Color.Red, unselectedContentColor = Color.White
+            )
         }
     }
 }
@@ -219,27 +214,39 @@ fun BottomBar(updateIndex: (Int) -> Unit, viewModel: MainScreenViewModel,showBot
 @Composable
 fun MainScreenSkin(
     gameList: List<Game>,
-    nav:NavController, bannerList: List<GameBanner>, reccommList: List<Game>,
-    switchSearch: () -> Unit, switchSettings: () -> Unit, clickable: Boolean, updatePendingValues:()->Unit,
-    updateLazyState:(Int,Int) -> Unit,
+    nav: NavController,
+    bannerList: List<GameBanner>,
+    reccommList: List<Game>,
+    switchSearch: () -> Unit,
+    switchSettings: () -> Unit,
+    clickable: Boolean,
+    updatePendingValues: () -> Unit,
+    updateLazyState: (Int, Int) -> Unit,
     rowState0: Int,
     rowState1: Int,
     rowState2: Int,
-    pagerState:Int,
-    bannerState:Int,
-    columnState:Int
+    pagerState: Int,
+    bannerState: Int,
+    columnState: Int
 
-){
+) {
 
 
-    val stateList = listOf<LazyListState>(rememberLazyListState(),rememberLazyListState(),rememberLazyListState(),rememberLazyListState(),rememberLazyListState(),rememberLazyListState())
+    val stateList = listOf<LazyListState>(
+        rememberLazyListState(),
+        rememberLazyListState(),
+        rememberLazyListState(),
+        rememberLazyListState(),
+        rememberLazyListState(),
+        rememberLazyListState()
+    )
     val pagerController = rememberPagerState()
 
     LaunchedEffect(Unit) {
-        stateList[0].scrollToItem(0,rowState0)
-        stateList[1].scrollToItem(0,rowState1)
-        stateList[2].scrollToItem(0,rowState2)
-        stateList[3].scrollToItem(0,columnState)
+        stateList[0].scrollToItem(0, rowState0)
+        stateList[1].scrollToItem(0, rowState1)
+        stateList[2].scrollToItem(0, rowState2)
+        stateList[3].scrollToItem(0, columnState)
         pagerController.scrollToPage(pagerState)
     }
 
@@ -248,11 +255,9 @@ fun MainScreenSkin(
         TopBar(switchSettings = { switchSettings() }, switchSearch = { switchSearch() }, nav = nav)
 
         LazyColumn(
-            Modifier
-                .fillMaxSize(),
-            state = stateList[3]
-                ) {
-            updateLazyState(5,stateList[3].firstVisibleItemScrollOffset)
+            Modifier.fillMaxSize(), state = stateList[3]
+        ) {
+            updateLazyState(5, stateList[3].firstVisibleItemScrollOffset)
 
             item {
 
@@ -261,7 +266,8 @@ fun MainScreenSkin(
                     Modifier
                         .fillMaxWidth()
                         .height(30.dp)
-                        .padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically
+                        .padding(start = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "Juegos Nuevos",
@@ -280,10 +286,9 @@ fun MainScreenSkin(
                     LazyRow(
                         Modifier
                             .fillMaxSize()
-                            .padding(5.dp),
-                        state = stateList[0]
+                            .padding(5.dp), state = stateList[0]
                     ) {
-                        updateLazyState(0,stateList[0].firstVisibleItemScrollOffset)
+                        updateLazyState(0, stateList[0].firstVisibleItemScrollOffset)
                         item {
                             Row() {
                                 for (i in 0 until 10) {
@@ -310,9 +315,7 @@ fun MainScreenSkin(
                 ) {
 
                     LazyRow(
-                        Modifier
-                            .fillMaxSize(),
-                        verticalAlignment = Alignment.CenterVertically
+                        Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically
                     ) {
 
                         item {
@@ -323,9 +326,8 @@ fun MainScreenSkin(
                                     .background(Color.Transparent)
                             ) {
 
-
                                 HorizontalPager(count = 3, state = pagerController) { page ->
-                                    updateLazyState(3,pagerController.currentPage)
+                                    updateLazyState(3, pagerController.currentPage)
                                     Image(
                                         modifier = Modifier
                                             .padding(top = 20.dp, bottom = 20.dp)
@@ -357,7 +359,8 @@ fun MainScreenSkin(
                     Modifier
                         .fillMaxWidth()
                         .height(30.dp)
-                        .padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically
+                        .padding(start = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "Próximos lanzamientos",
@@ -376,10 +379,9 @@ fun MainScreenSkin(
                     LazyRow(
                         Modifier
                             .fillMaxSize()
-                            .padding(8.dp),
-                        state = stateList[1]
+                            .padding(8.dp), state = stateList[1]
                     ) {
-                        updateLazyState(1,stateList[1].firstVisibleItemScrollOffset)
+                        updateLazyState(1, stateList[1].firstVisibleItemScrollOffset)
                         item {
                             Row() {
                                 for (i in 10 until 20) {
@@ -401,7 +403,8 @@ fun MainScreenSkin(
                     Modifier
                         .fillMaxWidth()
                         .height(30.dp)
-                        .padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically
+                        .padding(start = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "Tus recomendados",
@@ -420,10 +423,9 @@ fun MainScreenSkin(
                     LazyRow(
                         Modifier
                             .fillMaxSize()
-                            .padding(8.dp),
-                        state = stateList[2]
+                            .padding(8.dp), state = stateList[2]
                     ) {
-                        updateLazyState(2,stateList[2].firstVisibleItemScrollOffset)
+                        updateLazyState(2, stateList[2].firstVisibleItemScrollOffset)
                         item {
                             Row() {
                                 for (i in 0 until reccommList.size) {
@@ -446,73 +448,71 @@ fun MainScreenSkin(
 
         }
     }
-    
+
 }
 
 @Composable
-fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: List<Game>, nav: NavController){
+fun SearchMenu(
+    searchText: String, onValueChange: (String) -> Unit, gameList: List<Game>, nav: NavController
+) {
 
-    Box(){
+    Box() {
 
         Button(modifier = Modifier
             .fillMaxSize()
-            .alpha(0f),onClick = { /*EVITA HITBOXES DE ATRÁS*/ }) {}
+            .alpha(0f),
+            onClick = { /*EVITA HITBOXES DE ATRÁS*/ }) {}
 
-    Column(
-        Modifier
-            .fillMaxHeight()
-            .fillMaxWidth(1f)
-            .background(Color(0xFF0A0A0A))
-            ,
-    ) {
-
-        Box(
+        Column(
             Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.15f)
-                .clip(RoundedCornerShape(bottomEnd = 15.dp, bottomStart = 15.dp))
-                .background(Color.Black)
+                .fillMaxHeight()
+                .fillMaxWidth(1f)
+                .background(Color(0xFF0A0A0A)),
+        ) {
 
-                ,
-        contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.15f)
+                    .clip(RoundedCornerShape(bottomEnd = 15.dp, bottomStart = 15.dp))
+                    .background(Color.Black), contentAlignment = Alignment.Center
+            ) {
 
 
-            //TEXTFIELD
-            Column()
-            {
-                OutlinedTextField(
-                    value = searchText,
-                    maxLines = 1,
-                    modifier = Modifier
-                        .padding(horizontal = 15.dp)
-                        .fillMaxWidth(1f),
-                    singleLine = true,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        Color.White,
-                        cursorColor = Color.Red,
-                        focusedBorderColor = Color.Red,
-                        unfocusedBorderColor = Color.White
-                    ),
-                    leadingIcon = {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.search),
-                            modifier = Modifier.size(30.dp),
-                            tint = Color.White,
-                            contentDescription = "searchIcon"
-                        )
-                    },
-                    onValueChange = onValueChange,
-                    label = { Text(text = "Introduce un título", color = Color.White) },
+                //TEXTFIELD
+                Column() {
+                    OutlinedTextField(
+                        value = searchText,
+                        maxLines = 1,
+                        modifier = Modifier
+                            .padding(horizontal = 15.dp)
+                            .fillMaxWidth(1f),
+                        singleLine = true,
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            Color.White,
+                            cursorColor = Color.Red,
+                            focusedBorderColor = Color.Red,
+                            unfocusedBorderColor = Color.White
+                        ),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(id = R.drawable.search),
+                                modifier = Modifier.size(30.dp),
+                                tint = Color.White,
+                                contentDescription = "searchIcon"
+                            )
+                        },
+                        onValueChange = onValueChange,
+                        label = { Text(text = "Introduce un título", color = Color.White) },
                     )
+                }
+
+
             }
 
-
-
-        }
-
-        //RESULTADOS
-        //calculateSearchContents(searchText,gameList,nav)
-        LazyList(nav,searchText, gameList = gameList, isGameListB = true)
+            //RESULTADOS
+            //calculateSearchContents(searchText,gameList,nav)
+            LazyList(nav, searchText, gameList = gameList, isGameListB = true)
 
 
         }
@@ -520,33 +520,76 @@ fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: Li
 }
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SettingsMenu(logOut:() -> Unit, switchSettings: () -> Unit){
+fun SettingsMenu(logOut: () -> Unit, switchSettings: () -> Unit) {
+
+    var offsetX by remember { mutableStateOf(0f) }
+    val boxWidth =
+        DeviceConfig.dpToFloat(DeviceConfig.DPwidthPercentage(DeviceConfig.screenWidth, 70))
+    var returningDefault by remember { mutableStateOf(false) }
+
+    val offsetAnimation: Dp by animateDpAsState(
+        if (returningDefault) {
+            0.dp;
+        } else DeviceConfig.pxToDp(offsetX),
+        tween(durationMillis = 300, easing = LinearOutSlowInEasing)
+    )
+    if (returningDefault) {
+        LaunchedEffect(Unit) {
+            delay(300)
+            returningDefault = false
+        }
+    }
 
 
     Row(
         Modifier
             .fillMaxSize()
-            .background(Color.Transparent)) {
+            .background(Color.Transparent)
+            .offset {
+                IntOffset(
+                    DeviceConfig
+                        .dpToPx(offsetAnimation)
+                        .roundToInt(), 0
+                )
+            }                .pointerInput(Unit) {
+                detectDragGestures(onDragEnd = {
+                    //Si se mueve lo suficiente a la izquierda se cierra
+                    if ((offsetX.absoluteValue * 0.7) > DeviceConfig.tinyFloatToBig(
+                            boxWidth
+                        )
+                    ) {
+                        switchSettings()
+                    } else {
+                        //Si no, vuelve a su posición
+                        offsetX = 0f
+                        returningDefault = true
 
+                    }
 
-        Box(Modifier.weight(0.7f)) {
+                }) { change, dragAmount ->
+                    change.consume()
+                    if (dragAmount.x < 0) {
+                        offsetX += dragAmount.x
+                    }
 
-            Button(modifier = Modifier.fillMaxSize(),onClick = {}) {}
+                }
+            }
+    ) {
+
+        Box(
+            Modifier
+
+                .weight(boxWidth)
+) {
+
+            Button(modifier = Modifier.fillMaxSize(), onClick = {}) {}
 
             Column(
                 Modifier
                     .fillMaxHeight()
                     .fillMaxWidth()
-                    .background(Color(0xFF000000))
-                    .swipeable(
-                        state = rememberSwipeableState(initialValue = "On"),
-                        orientation = Orientation.Horizontal,
-                        anchors = mapOf(0f to "On", 150f to "Off", 300f to "Locked"),
-                        thresholds = { _, _ -> FractionalThreshold(0.5f) }
-                    )
-                ,
+                    .background(Color(0xFF000000)),
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -554,88 +597,85 @@ fun SettingsMenu(logOut:() -> Unit, switchSettings: () -> Unit){
                     .fillMaxWidth(0.5f)
                     .padding(bottom = 15.dp)
                     .fillMaxHeight(0.05f),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
-                    ,onClick = {logOut()
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
+                    onClick = {
+                        logOut()
                     }) {
                     Text(text = "Logout", color = Color.Black, fontWeight = FontWeight.Bold)
 
                 }
             }
+
         }
         Box(Modifier.weight(0.3f)) {
             //Boton invisible fuera para cerrar fondo
             Button(modifier = Modifier
                 .fillMaxSize()
-                .alpha(0f),onClick = { switchSettings() }) {}
+                .alpha(0f), onClick = { switchSettings() }) {}
         }
-
-
 
 
     }
 
 
-
 }
 
 @Composable
-fun TopBar(switchSettings: () -> Unit, switchSearch: () -> Unit, nav:NavController){
+fun TopBar(switchSettings: () -> Unit, switchSearch: () -> Unit, nav: NavController) {
 
-        //TOPBAR
-        Row(
+    //TOPBAR
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .height(DeviceConfig.heightPercentage(5))
+            .background(Color(0xFF030303)),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
             Modifier
-                .fillMaxWidth()
-                .height(DeviceConfig.heightPercentage(5))
-                .background(Color(0xFF030303)),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        )
-        {
-            Box(
-                Modifier
-                    .background(Color.Transparent) //Color(0xFF0A0A0A)
-                    .fillMaxHeight()
-                    .weight(0.33f)
-                    .padding(start = 5.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                IconButton(onClick = { switchSettings() }) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(id = R.drawable.settings),
-                        "",
-                        modifier = Modifier.size(30.dp),
-                        tint = Color.White
-                    )
-                }
+                .background(Color.Transparent) //Color(0xFF0A0A0A)
+                .fillMaxHeight()
+                .weight(0.33f)
+                .padding(start = 5.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            IconButton(onClick = { switchSettings() }) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.settings),
+                    "",
+                    modifier = Modifier.size(30.dp),
+                    tint = Color.White
+                )
+            }
 
+        }
+        Box(
+            Modifier
+                .background(Color.Transparent)
+                .fillMaxHeight()
+                .weight(0.50f),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(painter = painterResource(R.drawable.logovilipng), contentDescription = "")
+        }
+        Box(
+            Modifier
+                .background(Color.Transparent)
+                .fillMaxHeight()
+                .weight(0.33f)
+                .padding(end = 5.dp), contentAlignment = Alignment.CenterEnd
+        ) {
+            IconButton(onClick = { switchSearch() }) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.search),
+                    "",
+                    modifier = Modifier.size(30.dp),
+                    tint = Color.White
+                )
             }
-            Box(
-                Modifier
-                    .background(Color.Transparent)
-                    .fillMaxHeight()
-                    .weight(0.50f),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(painter = painterResource(R.drawable.logovilipng), contentDescription = "")
-            }
-            Box(
-                Modifier
-                    .background(Color.Transparent)
-                    .fillMaxHeight()
-                    .weight(0.33f)
-                    .padding(end = 5.dp),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                IconButton(onClick = { switchSearch() }) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(id = R.drawable.search),
-                        "",
-                        modifier = Modifier.size(30.dp),
-                        tint = Color.White
-                    )
-                }
 
-            }
+        }
 
 
     }

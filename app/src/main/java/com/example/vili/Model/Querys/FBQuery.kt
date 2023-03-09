@@ -32,6 +32,8 @@ class FBQuery {
         //Esto significa que no utiliza la CPU principal para conseguir los datos
         //Y por tanto que no se congela la aplicación hasta que carguen los datos
 
+
+        //region GET
         //Get all games in the collection
         fun getGameList(): Flow<List<Game>> = flow {
 
@@ -59,60 +61,6 @@ class FBQuery {
 
         }
 
-        //Guardar entrada de juego en la lista del usuario pertinente
-        fun saveGameToUserList(game: Game, score: Int = 0, comment:String = ""){
-
-            val db = Firebase.firestore
-            val data = UserGame("[$score]","[$comment]","[${game.id}]","[${game.name}]","[${game.imageURL}]","[${game.avgDuration}]","[${game.description}]","[${game.developers}]","[${game.genres}]","[${game.releaseDate}]")
-
-            //Guardo la referencia al juego en el pertinente registro del usuario
-            val userUID = FirebaseAuth.getInstance().currentUser?.uid
-            val reference = db.collection("UserDATA").document(userUID.toString())
-
-            if (game.id != "[]") {
-
-                reference.get().addOnSuccessListener {
-                    if (it.get("userGameList") != null) {
-                        //Como el campo existe, actualizo los datos
-                        reference.update("userGameList", FieldValue.arrayUnion(data))
-                    } else {
-                        //El campo no existe, así que lo creo y después añado los datos
-                        val emptyArray = mutableListOf<UserGame>()
-                        //reference.set(hashMapOf("userGameList" to emptyArray))
-                        reference.update("userGameList", FieldValue.arrayUnion(data))
-                    }
-                    CentralizedData.tellGameListToReload(true)
-                }
-            }
-
-
-        }
-
-
-        fun saveGameToUserPlanningList(game: Game){
-
-            val db = Firebase.firestore
-            val data = Game("[${game.id}]","[${game.name}]","[${game.imageURL}]","[${game.avgDuration}]","[${game.description}]","[${game.developers}]","[${game.genres}]","[${game.releaseDate}]")
-
-            //Guardo la referencia al juego en el pertinente registro del usuario
-            val userUID = FirebaseAuth.getInstance().currentUser?.uid
-            val reference = db.collection("UserDATA").document(userUID.toString())
-
-            reference.get().addOnSuccessListener {
-                    if (it.get("userGamePlanningList") != null) {
-                        //Como el campo existe, actualizo los datos
-                        reference.update("userGamePlanningList", FieldValue.arrayUnion(data))
-                    } else {
-                        //El campo no existe, así que lo creo y después añado los datos
-                        val emptyArray = mutableListOf<Game>()
-                        //reference.set(hashMapOf("userGamePlanningList" to emptyArray))
-                        reference.update("userGamePlanningList", FieldValue.arrayUnion(data))
-                    }
-                    CentralizedData.tellGameListToReload(true)
-                }
-        }
-
-        //Obtener lista de juegos de usuario
         fun getUserGameList(): Flow<List<UserGame>> = callbackFlow{
 
             val db = Firebase.firestore
@@ -202,6 +150,79 @@ class FBQuery {
             awaitClose { channel.close() }
         }
 
+        fun getGameBanners():Flow<List<GameBanner>> = callbackFlow{
+            val db = Firebase.firestore
+            val reference = db.collection("gameBanners")
+
+            val gameBannerList = mutableListOf<GameBanner>()
+
+            reference.get().await().forEach {
+                gameBannerList.add(GameBanner(it.getString("name").toString(),it.getString("imageURL").toString(),it.getString("gameID").toString()))
+            }
+
+            trySend(gameBannerList)
+
+            awaitClose { channel.close() }
+        }
+        //endregion
+
+        //region SAVE
+
+        //Guardar entrada de juego en la lista del usuario pertinente
+        fun saveGameToUserList(game: Game, score: Int = 0, comment:String = ""){
+
+            val db = Firebase.firestore
+            val data = UserGame("[$score]","[$comment]","[${game.id}]","[${game.name}]","[${game.imageURL}]","[${game.avgDuration}]","[${game.description}]","[${game.developers}]","[${game.genres}]","[${game.releaseDate}]")
+
+            //Guardo la referencia al juego en el pertinente registro del usuario
+            val userUID = FirebaseAuth.getInstance().currentUser?.uid
+            val reference = db.collection("UserDATA").document(userUID.toString())
+
+            if (game.id != "[]") {
+
+                reference.get().addOnSuccessListener {
+                    if (it.get("userGameList") != null) {
+                        //Como el campo existe, actualizo los datos
+                        reference.update("userGameList", FieldValue.arrayUnion(data))
+                    } else {
+                        //El campo no existe, así que lo creo y después añado los datos
+                        val emptyArray = mutableListOf<UserGame>()
+                        //reference.set(hashMapOf("userGameList" to emptyArray))
+                        reference.update("userGameList", FieldValue.arrayUnion(data))
+                    }
+                    CentralizedData.tellGameListToReload(true)
+                }
+            }
+
+
+        }
+
+
+        fun saveGameToUserPlanningList(game: Game){
+
+            val db = Firebase.firestore
+            val data = Game("[${game.id}]","[${game.name}]","[${game.imageURL}]","[${game.avgDuration}]","[${game.description}]","[${game.developers}]","[${game.genres}]","[${game.releaseDate}]")
+
+            //Guardo la referencia al juego en el pertinente registro del usuario
+            val userUID = FirebaseAuth.getInstance().currentUser?.uid
+            val reference = db.collection("UserDATA").document(userUID.toString())
+
+            reference.get().addOnSuccessListener {
+                if (it.get("userGamePlanningList") != null) {
+                    //Como el campo existe, actualizo los datos
+                    reference.update("userGamePlanningList", FieldValue.arrayUnion(data))
+                } else {
+                    //El campo no existe, así que lo creo y después añado los datos
+                    val emptyArray = mutableListOf<Game>()
+                    //reference.set(hashMapOf("userGamePlanningList" to emptyArray))
+                    reference.update("userGamePlanningList", FieldValue.arrayUnion(data))
+                }
+                CentralizedData.tellGameListToReload(true)
+            }
+        }
+        //endregion
+
+        //region REMOVE
         fun removeGameFromUserList(gameID: String){
             val db = Firebase.firestore
             val userUID = FirebaseAuth.getInstance().currentUser?.uid
@@ -239,22 +260,9 @@ class FBQuery {
                 }
 
         }
+        //endregion
 
-        fun getGameBanners():Flow<List<GameBanner>> = callbackFlow{
-            val db = Firebase.firestore
-            val reference = db.collection("gameBanners")
-
-            val gameBannerList = mutableListOf<GameBanner>()
-
-            reference.get().await().forEach {
-                gameBannerList.add(GameBanner(it.getString("name").toString(),it.getString("imageURL").toString(),it.getString("gameID").toString()))
-            }
-
-            trySend(gameBannerList)
-
-            awaitClose { channel.close() }
-        }
-
+        //region CREATE
         //Si no existe la entrada de UserDATA para este usuario se crea
         fun createUserData(){
             val db = Firebase.firestore
@@ -271,7 +279,7 @@ class FBQuery {
                 }
             }
         }
-
+        //endregion
 
     }
 }

@@ -2,7 +2,7 @@ package viliApp
 
 import java.util.Date
 
-data class Game( //SI SE MODIFICA CAMBIAR FB getGamerUserUnion
+data class Game(
     var id: String = "",
     var name: String = "",
     var imageURL: String = "",

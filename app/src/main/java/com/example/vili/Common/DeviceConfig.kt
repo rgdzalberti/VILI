@@ -1,13 +1,13 @@
 package viliApp
 
-import android.util.Log
+import android.util.DisplayMetrics
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import viliApp.DeviceConfig.Companion.setDpValues
+
 
 @Composable
 fun getDeviceConfig() {
@@ -55,6 +55,25 @@ class DeviceConfig(){
         fun DPwidthPercentage(initialDP : Dp, targetPercentage : Int):Dp{
             return ((targetPercentage * initialDP.toString().substringBefore('.').toInt())/100).dp
         }
+
+        fun dpToFloat(initialDP: Dp):Float{
+            return ((initialDP.toString().substringBefore('.').toFloat() * 1)/ returnWidth().toString().substringBefore('.').toFloat())
+        }
+
+        //Cuanto corresponde 0.5f en big?
+        fun tinyFloatToBig(initialFloat:Float):Float{
+            return initialFloat * returnWidth().toString().substringBefore('.').toFloat()
+        }
+
+        fun dpToPx(initDP: Dp):Float{
+            //return ((initDP.toString().substringBefore('.').toFloat()) * (dpi / 160)).toInt()
+            return (initDP.toString().substringBefore('.').toFloat() * (dpi / DisplayMetrics.DENSITY_DEFAULT))
+        }
+
+        fun pxToDp(px: Float): Dp{
+            return (px / (dpi/ DisplayMetrics.DENSITY_DEFAULT)).dp
+        }
+
 
 
     }
