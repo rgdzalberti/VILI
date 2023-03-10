@@ -30,6 +30,10 @@ private val LightColorPalette = lightColors(
     */
 )
 
+private val VILIColorPalette = darkColors(
+    primary = LightBlack
+)
+
 
 
 

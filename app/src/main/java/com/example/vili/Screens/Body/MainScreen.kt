@@ -1,6 +1,7 @@
 package viliApp
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
@@ -61,7 +62,6 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
 
 
     Scaffold(
-        //topBar = { topBar(switchSettings = viewModel::switchSettings, switchSearch = viewModel::switchSearch, nav = navController) },
         bottomBar = { BottomBar(viewModel::updateIndex, viewModel, viewModel.bottomBar) },
 
 
@@ -467,7 +467,7 @@ fun SearchMenu(
             Modifier
                 .fillMaxHeight()
                 .fillMaxWidth(1f)
-                .background(Color(0xFF0A0A0A)),
+                .background(Color(0xFF181818)),
         ) {
 
             Box(
@@ -511,7 +511,6 @@ fun SearchMenu(
             }
 
             //RESULTADOS
-            //calculateSearchContents(searchText,gameList,nav)
             LazyList(nav, searchText, gameList = gameList, isGameListB = true)
 
 
@@ -542,40 +541,41 @@ fun SettingsMenu(logOut: () -> Unit, switchSettings: () -> Unit) {
     }
 
 
-    Row(
-        Modifier
-            .fillMaxSize()
-            .background(Color.Transparent)
-            .offset {
-                IntOffset(
-                    DeviceConfig
-                        .dpToPx(offsetAnimation)
-                        .roundToInt(), 0
-                )
-            }                .pointerInput(Unit) {
-                detectDragGestures(onDragEnd = {
-                    //Si se mueve lo suficiente a la izquierda se cierra
-                    if ((offsetX.absoluteValue * 0.7) > DeviceConfig.tinyFloatToBig(
-                            boxWidth
-                        )
-                    ) {
-                        switchSettings()
-                    } else {
-                        //Si no, vuelve a su posición
-                        offsetX = 0f
-                        returningDefault = true
-
-                    }
-
-                }) { change, dragAmount ->
-                    change.consume()
-                    if (dragAmount.x < 0) {
-                        offsetX += dragAmount.x
-                    }
+    Row(Modifier
+        .fillMaxSize()
+        .background(Color.Transparent)
+        .offset {
+            IntOffset(
+                DeviceConfig
+                    .dpToPx(offsetAnimation)
+                    .roundToInt(), 0
+            )
+        }
+        .pointerInput(Unit) {
+            detectDragGestures(onDragEnd = {
+                //Si se mueve lo suficiente a la izquierda se cierra
+                if ((offsetX.absoluteValue * 0.7) > DeviceConfig.tinyFloatToBig(
+                        boxWidth
+                    )
+                ) {
+                    switchSettings()
+                } else {
+                    //Si no, vuelve a su posición
+                    offsetX = 0f
+                    returningDefault = true
 
                 }
+
+            }) { change, dragAmount ->
+                change.consume()
+                if (dragAmount.x < 0) {
+                    offsetX += dragAmount.x
+                } else if (dragAmount.x>0 && offsetX<0){
+                    offsetX += dragAmount.x
+                }
+
             }
-    ) {
+        }) {
 
         Box(
             Modifier

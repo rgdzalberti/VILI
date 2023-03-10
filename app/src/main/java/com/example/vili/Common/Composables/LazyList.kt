@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.vili.myApp.theme.LightBlack
 
 @Composable
 fun LazyList(nav: NavController, searchText: String = "", gameList: List<Game> = emptyList(), userGameList: List<UserGame> = emptyList(), isGameListB: Boolean = false, isUserGameListB: Boolean = false){
@@ -17,7 +18,7 @@ fun LazyList(nav: NavController, searchText: String = "", gameList: List<Game> =
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(Color(0xFF0A0A0A))
+        .background(LightBlack)
         .padding(top = 8.dp)) {
 
         //Primero hago una lista filtrando el término de búsqueda (Para GameList)
