@@ -40,6 +40,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.vili.R
+import com.example.vili.myApp.theme.ObscureBlack
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -58,7 +59,7 @@ fun PreviewMainScreen() {
 fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hiltViewModel()) {
 
     getDeviceConfig()
-    systemBarColor(color = Color(0xFF0A0A0A))
+    systemBarColor(color = ObscureBlack)
 
 
     Scaffold(
@@ -249,6 +250,8 @@ fun MainScreenSkin(
         stateList[3].scrollToItem(0, columnState)
         pagerController.scrollToPage(pagerState)
     }
+
+
 
     Column() {
 
@@ -475,7 +478,7 @@ fun SearchMenu(
                     .fillMaxWidth()
                     .fillMaxHeight(0.15f)
                     .clip(RoundedCornerShape(bottomEnd = 15.dp, bottomStart = 15.dp))
-                    .background(Color.Black), contentAlignment = Alignment.Center
+                    .background(ObscureBlack), contentAlignment = Alignment.Center
             ) {
 
 
@@ -628,7 +631,7 @@ fun TopBar(switchSettings: () -> Unit, switchSearch: () -> Unit, nav: NavControl
         Modifier
             .fillMaxWidth()
             .height(DeviceConfig.heightPercentage(5))
-            .background(Color(0xFF030303)),
+            .background(ObscureBlack),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {

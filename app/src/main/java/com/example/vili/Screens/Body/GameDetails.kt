@@ -3,6 +3,7 @@ package viliApp
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -147,6 +148,21 @@ fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hi
 
 
         //GENEROS
+            /*
+            LazyRow {
+                viewModel.listaGenres.forEach {
+                    item {
+                        Spacer(modifier = Modifier.width(10.dp))
+                        for (i in 0 until viewModel.listaGenres.size){
+                            GenreBox(genre = viewModel.listaGenres[i])
+                            Spacer(modifier = Modifier.width(10.dp))
+                        }
+                    }
+                }
+            }
+
+             */
+
         Row(
             Modifier
                 .height(IntrinsicSize.Min)
@@ -163,6 +179,8 @@ fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hi
                 Spacer(modifier = Modifier.width(10.dp))
             }
         }
+
+
 
         if (viewModel.moreGenres) {
             Row(

@@ -126,7 +126,7 @@ fun LazyList(nav: NavController, searchText: String = "", gameList: List<Game> =
 
                     }
 
-                    Spacer(modifier = Modifier.height(50.dp))
+                    Spacer(modifier = Modifier.height(70.dp))
                 }
 
 
