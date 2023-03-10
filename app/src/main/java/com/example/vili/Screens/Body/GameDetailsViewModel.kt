@@ -21,7 +21,6 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
     var enableMoreOptions by savedStateHandle.saveable { mutableStateOf(false) }
 
     var listaGenres = listOf<String>()
-    var moreGenres by savedStateHandle.saveable { mutableStateOf(false) }
 
     //Valor del dropdown
     var ddValue by savedStateHandle.saveable { mutableStateOf(0) }
@@ -81,10 +80,6 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
         var wasGameInList = false
         FBQuery.removeGameFromUserPlanningList(gameID)
 
-    }
-
-    fun updateMoreGenres(newValue: Boolean){
-        moreGenres = newValue
     }
 
     fun dropDownValue(dropIndex: Int){

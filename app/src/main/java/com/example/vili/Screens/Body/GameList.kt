@@ -23,12 +23,12 @@ import kotlinx.coroutines.launch
 @Preview
 @Composable
 fun previewGameList() {
-    gameList(rememberNavController())
+    GameList(rememberNavController())
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun gameList(navController: NavController, viewModel: GameListViewModel = hiltViewModel(), MainScreenViewModel:MainScreenViewModel = hiltViewModel()) {
+fun GameList(navController: NavController, viewModel: GameListViewModel = hiltViewModel(), MainScreenViewModel:MainScreenViewModel = hiltViewModel()) {
 
     systemBarColor(color = Color(0xFF0A0A0A))
     getDeviceConfig()
@@ -61,7 +61,7 @@ fun gameList(navController: NavController, viewModel: GameListViewModel = hiltVi
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .background(Color.Black),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
             tabData(viewModel.tabIndex,viewModel::updateTabData,pagerState,scope)
         }
 
@@ -76,14 +76,14 @@ fun gameList(navController: NavController, viewModel: GameListViewModel = hiltVi
     )
     {
 
-            HorizontalPager(count = 2,state = pagerState) { page ->
+        HorizontalPager(count = 2,state = pagerState) { page ->
 
-                when(page){
-                    0 -> {viewModel.updateTabData(0); LazyList(navController, userGameList = CentralizedData.gameList.value, isUserGameListB = true)  }
-                    1 -> {viewModel.updateTabData(1); LazyList(navController, gameList = CentralizedData.planningList.value, isGameListB = true) }
-                }
-
+            when(page){
+                0 -> {viewModel.updateTabData(0); LazyList(navController, userGameList = CentralizedData.gameList.value, isUserGameListB = true)  }
+                1 -> {viewModel.updateTabData(1); LazyList(navController, gameList = CentralizedData.planningList.value, isGameListB = true) }
             }
+
+        }
 
     }
 
@@ -121,8 +121,8 @@ fun tabData(tabIndex: Int, updateTabIndex:(Int) -> Unit, pagerState: PagerState,
                 selected = pagerState.currentPage == index,
                 onClick = {
                     scope.launch {
-                    pagerState.scrollToPage(index)}
-                          },
+                        pagerState.scrollToPage(index)}
+                },
             )
         }
     }
@@ -236,5 +236,3 @@ fun DropDownSort(sortList: (Int) -> Unit, page: Int) {
         }
     }
 }
-
-    

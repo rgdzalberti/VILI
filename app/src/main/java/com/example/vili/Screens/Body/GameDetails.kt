@@ -31,283 +31,314 @@ import com.example.vili.R
 
 @Preview
 @Composable
-fun previewGameDetails(){
+fun previewGameDetails() {
     GameDetails(rememberNavController())
 }
 
 @Composable
-fun GameDetails(navController:NavController,viewModel: GameDetailsViewModel = hiltViewModel()){
+fun GameDetails(navController: NavController, viewModel: GameDetailsViewModel = hiltViewModel()) {
 
     //Caja para el submenú
-    Box(){
+    Box() {
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(Color(0xFF161616))) {
-
-
-
-        //TopBar
-        Row(
+        Column(
             Modifier
-                .fillMaxWidth()
-                .height(DeviceConfig.heightPercentage(5))
-                .background(Color.Black)) {
+                .fillMaxSize()
+                .background(Color(0xFF161616))
+        ) {
 
-            Box(
+            //region TopBar
+            Row(
                 Modifier
-                    .fillMaxHeight()
-                    .weight(0.50f)){
-            //Go Back
-            IconButton(onClick = {
-                navController.popBackStack()
-            }) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.arrowback),
-                    tint = Color.White,
-                    contentDescription = "Visibility Icon"
-                )
-            }
-            }
-
-            Box(
-                Modifier
-                    .fillMaxHeight()
-                    .weight(0.50f),
-                contentAlignment = Alignment.CenterEnd
-
+                    .fillMaxWidth()
+                    .height(DeviceConfig.heightPercentage(5))
+                    .background(Color.Black)
             ) {
-                //More Options (EDIT)
 
-                IconButton(onClick = {
-                    viewModel.statusMoreOptions()
-                }) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(id = com.example.vili.R.drawable.edit),
-                        tint = Color.White,
-                        contentDescription = "Visibility Icon"
-                    )
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .weight(0.50f)
+                ) {
+                    //Go Back
+                    IconButton(onClick = {
+                        navController.popBackStack()
+                    }) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = R.drawable.arrowback),
+                            tint = Color.White,
+                            contentDescription = "Visibility Icon"
+                        )
+                    }
                 }
 
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .weight(0.50f), contentAlignment = Alignment.CenterEnd
 
-            }
-
-
-        }
-        
-        //Cajetilla Portada
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF161616))
-                .height(DeviceConfig.heightPercentage(30))) {
-            Portada(viewModel)
-
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(Modifier.matchParentSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
-                Text(modifier = Modifier.padding(start = 3.dp, end = 3.dp),text = viewModel.gameData.name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp, textAlign = TextAlign.Center)
-                Text(text = viewModel.gameData.releaseDate, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                    Spacer(modifier = Modifier.padding(top = 5.dp))
-                    if (viewModel.gameData.avgDuration.isNotBlank()) {GenreBox(genre ="${viewModel.gameData.avgDuration} Horas" , Color.Black)
-
+                ) {
+                    IconButton(onClick = {
+                        viewModel.statusMoreOptions()
+                    }) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = com.example.vili.R.drawable.edit),
+                            tint = Color.White,
+                            contentDescription = "Visibility Icon"
+                        )
                     }
                 }
             }
+            //endregion
 
-        }
-        
-        //BODY
+            //region PORTADA Y TEXTO DERECHA
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF161616))
+                    .height(DeviceConfig.heightPercentage(30))
+            ) {
+                Portada(viewModel)
 
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(
+                        Modifier.matchParentSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(start = 3.dp, end = 3.dp),
+                            text = viewModel.gameData.name,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = viewModel.gameData.releaseDate,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        )
+                        Spacer(modifier = Modifier.padding(top = 5.dp))
+                        if (viewModel.gameData.avgDuration.isNotBlank()) {
+                            GenreBox(genre = "${viewModel.gameData.avgDuration} Horas", Color.Black)
 
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF161616),
-                        Color(0x9F3D2121)
-                    )
-                )
-            )){
-        //Description
-        Column(
-            Modifier
-                .height(IntrinsicSize.Min)
-                .fillMaxWidth(1f)
-                , horizontalAlignment = Alignment.CenterHorizontally) {
+                        }
+                    }
+                }
 
-            Row(modifier = Modifier
-                .fillMaxHeight()
-                .fillMaxWidth()
-                .background(Color.Transparent)
-                ){
-                Text(modifier = Modifier.padding(5.dp),text = viewModel.gameData.description, color = Color.White, fontSize = 15.sp)
             }
-        }
+            //endregion
 
+            //region BODY
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF161616), Color(0x9F3D2121)
+                            )
+                        )
+                    )
+            ) {
+                //region DESCRIPCION
+                Column(
+                    Modifier
+                        .height(IntrinsicSize.Min)
+                        .fillMaxWidth(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
-        //GENEROS
-            /*
-            LazyRow {
-                viewModel.listaGenres.forEach {
-                    item {
-                        Spacer(modifier = Modifier.width(10.dp))
-                        for (i in 0 until viewModel.listaGenres.size){
-                            GenreBox(genre = viewModel.listaGenres[i])
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth()
+                            .background(Color.Transparent)
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(5.dp),
+                            text = viewModel.gameData.description,
+                            color = Color.White,
+                            fontSize = 15.sp
+                        )
+                    }
+                }
+                //endregion
+
+                //region GENEROS
+                Spacer(modifier = Modifier.height(20.dp))
+                LazyRow {
+                    viewModel.listaGenres.forEach {
+                        item {
+                            Spacer(modifier = Modifier.width(10.dp))
+                            GenreBox(genre = it)
                             Spacer(modifier = Modifier.width(10.dp))
                         }
                     }
                 }
+                //endregion
             }
+            //endregion
 
-             */
-
-        Row(
-            Modifier
-                .height(IntrinsicSize.Min)
-                .fillMaxWidth()
-                .padding(10.dp)
-            , horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            viewModel.listaGenres.forEach {
-                //Primero chekio que no es el quinto index para adelante
-                val index = viewModel.listaGenres.indexOf(it)
-                if (index < 4) {GenreBox(genre = it)} else {
-                    //Le digo que hay más de 4 y que lo ponga en una segunda fila
-                    viewModel.updateMoreGenres(true)
-                }
-                Spacer(modifier = Modifier.width(10.dp))
-            }
         }
-
-
-
-        if (viewModel.moreGenres) {
-            Row(
-                Modifier
-                    .height(IntrinsicSize.Min)
-                    .fillMaxWidth()
-                    .padding(top = 5.dp, start = 10.dp, end = 10.dp, bottom = 10.dp),
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                for (i in 4 until viewModel.listaGenres.size){
-                    GenreBox(genre = viewModel.listaGenres[i])
-                    Spacer(modifier = Modifier.width(10.dp))
-                }
-
-            }
-        }
-
-    }
-
-    }
         if (viewModel.enableMoreOptions) {
-            MoreOptions(viewModel::statusMoreOptions,viewModel::addGameToUserList,viewModel::removeGameFromUserList,viewModel.gameID,viewModel::dropDownValue,viewModel.ddValue,viewModel::addGameToUserPlanningList,viewModel::removeGameFromUserPlanningList,viewModel.planned,viewModel.completed,viewModel::updateCompleted,viewModel::updatePlanned,viewModel.stars,viewModel::updateStars)
+            MoreOptions(
+                viewModel::statusMoreOptions,
+                viewModel::addGameToUserList,
+                viewModel::removeGameFromUserList,
+                viewModel.gameID,
+                viewModel::dropDownValue,
+                viewModel.ddValue,
+                viewModel::addGameToUserPlanningList,
+                viewModel::removeGameFromUserPlanningList,
+                viewModel.planned,
+                viewModel.completed,
+                viewModel::updateCompleted,
+                viewModel::updatePlanned,
+                viewModel.stars,
+                viewModel::updateStars
+            )
         }
     }
-    
+
 
 }
 
 @Composable
-fun Portada(viewModel:GameDetailsViewModel){
+fun Portada(viewModel: GameDetailsViewModel) {
 
 
-        Box(modifier = Modifier
+    Box(
+        modifier = Modifier
             .height(220.dp)
             .width(160.dp)
             .padding(5.dp)
-            .background(Color.Black)){
-            Image(
-                modifier = Modifier.fillMaxSize(),
-                painter = rememberAsyncImagePainter(viewModel.gameData.imageURL),
-                contentDescription = null,
-                contentScale = ContentScale.Crop
-            )
-        }
+            .background(Color.Transparent)
+    ) {
+        Image(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(10.dp)),
+            painter = rememberAsyncImagePainter(viewModel.gameData.imageURL),
+            contentDescription = null,
+            contentScale = ContentScale.Crop
+        )
+    }
 
 
-
-
-    
 }
 
 
 @Composable
-fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: (Int)-> Unit, deleteFromUserList: (String)-> Unit,gameID: String, updateDDV: (Int) -> Unit, ddValue: Int, saveToUserPlanningList: ()-> Unit, deleteFromUserPlanningList: (String)-> Unit, planned: Boolean, completed: Boolean, updateCompleted:()->Unit, updatePlanning:()->Unit,currentIndex: Int, updateStars: (Int) -> Unit){
+fun MoreOptions(
+    disableMoreOptions: () -> Unit,
+    saveToUserList: (Int) -> Unit,
+    deleteFromUserList: (String) -> Unit,
+    gameID: String,
+    updateDDV: (Int) -> Unit,
+    ddValue: Int,
+    saveToUserPlanningList: () -> Unit,
+    deleteFromUserPlanningList: (String) -> Unit,
+    planned: Boolean,
+    completed: Boolean,
+    updateCompleted: () -> Unit,
+    updatePlanning: () -> Unit,
+    currentIndex: Int,
+    updateStars: (Int) -> Unit
+) {
 
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(0xCE0A0A0A))
-            , contentAlignment = Alignment.Center) {
+            .background(Color(0xCE0A0A0A)), contentAlignment = Alignment.Center
+    ) {
 
         Button(modifier = Modifier
             .fillMaxSize()
             //Un boton invisible de fondo para que se cierre el menu cuando se clicka fuera
             //Además actualizo el index del dropdown seleccionado a 0 pues se resetea al salir
-            .alpha(0f),onClick = { disableMoreOptions(); updateDDV(0) }) {}
+            .alpha(0f), onClick = { disableMoreOptions(); updateDDV(0) }) {}
 
         Box(
             Modifier
                 .width(DeviceConfig.widthPercentage(80))
                 .height(DeviceConfig.heightPercentage(40))
                 .clip(RoundedCornerShape(6.dp))
-                .background(Color(0xFF020202))) {
+                .background(Color(0xFF020202))
+        ) {
             Text(text = "aaa")
 
             Button(modifier = Modifier
                 .fillMaxSize()
                 .alpha(0f), onClick = { /*ANTIMATERIA*/ }) {}
 
-            Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween, horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
 
                 Row(
                     Modifier
                         .height(40.dp)
                         .fillMaxWidth()
-                        .background(Color(0xFF1B1B1B))) { Text(text = "")}
+                        .background(Color(0xFF1B1B1B))
+                ) { Text(text = "") }
 
                 //INFO BODY
                 Column(Modifier, horizontalAlignment = Alignment.CenterHorizontally) {
 
 
-                Text(text = "Status", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                Column(
-                    Modifier
-                        .fillMaxHeight(0.35f)
-                        .fillMaxWidth(0.5f)
-                        .clip(RoundedCornerShape(5.dp)),
-                    verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    DropDownDetails(updateDDV)
-                }
+                    Text(
+                        text = "Status",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    )
+                    Column(
+                        Modifier
+                            .fillMaxHeight(0.35f)
+                            .fillMaxWidth(0.5f)
+                            .clip(RoundedCornerShape(5.dp)),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        DropDownDetails(updateDDV)
+                    }
                     if (ddValue == 0 && !completed) {
                         ratingStars(currentIndex, updateStars)
                     }
                 }
                 //////////
-                
+
                 Row(
                     Modifier
                         .height(40.dp)
                         .fillMaxWidth()
                         .weight(1f, false)
                         .background(Color(0xFF1B1B1B)),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End) {
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End
+                ) {
 
-                    when(ddValue){
+                    when (ddValue) {
 
                         //Completado
                         0 -> {
 
                             //Si ya está el juego en la lista se da la opción de eliminar
-                            if (completed){
-                                ConfirmButton("Eliminar",{deleteFromUserList(gameID);updateCompleted()})
-                            }
-                            else{
-                                ConfirmButton("Añadir", {saveToUserList(currentIndex); updateCompleted()})
+                            if (completed) {
+                                ConfirmButton("Eliminar",
+                                    { deleteFromUserList(gameID);updateCompleted() })
+                            } else {
+                                ConfirmButton(
+                                    "Añadir",
+                                    { saveToUserList(currentIndex); updateCompleted() })
                             }
 
                         }
@@ -315,11 +346,13 @@ fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: (Int)-> Unit, de
                         //Planning
                         1 -> {
                             //Si ya está el juego en la lista se da la opción de eliminar
-                            if (planned){
-                                ConfirmButton("Eliminar",{deleteFromUserPlanningList(gameID); updatePlanning()})
-                            }
-                            else{
-                                ConfirmButton("Añadir", {saveToUserPlanningList(); updatePlanning()})
+                            if (planned) {
+                                ConfirmButton("Eliminar",
+                                    { deleteFromUserPlanningList(gameID); updatePlanning() })
+                            } else {
+                                ConfirmButton(
+                                    "Añadir",
+                                    { saveToUserPlanningList(); updatePlanning() })
                             }
                         }
 
@@ -331,7 +364,6 @@ fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: (Int)-> Unit, de
             }
 
 
-
         }
 
     }
@@ -339,15 +371,14 @@ fun MoreOptions(disableMoreOptions: () -> Unit, saveToUserList: (Int)-> Unit, de
 }
 
 @Composable
-fun GenreBox(genre: String, color: Color = Color.Black){
+fun GenreBox(genre: String, color: Color = Color.Red) {
 
     Box(
         Modifier
-            .clip(RoundedCornerShape(3.dp))
+            .clip(RoundedCornerShape(9.dp))
             .height(IntrinsicSize.Min)
             .width(IntrinsicSize.Max)
-            .background(color),
-        contentAlignment = Alignment.Center
+            .background(color), contentAlignment = Alignment.Center
     ) {
         Text(text = " " + genre + " ", color = Color.White, fontSize = 15.sp)
     }
@@ -370,12 +401,9 @@ fun DropDownDetails(updateDDV: (Int) -> Unit) {
     }
 
     // the box
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = {
-            expanded = !expanded
-        }
-    ) {
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = {
+        expanded = !expanded
+    }) {
 
         // text field
         TextField(
@@ -387,27 +415,25 @@ fun DropDownDetails(updateDDV: (Int) -> Unit) {
                 ExposedDropdownMenuDefaults.TrailingIcon(
                     expanded = expanded,
 
-                )
+                    )
             },
             colors = ExposedDropdownMenuDefaults.textFieldColors(
                 backgroundColor = Color(0xFF1B1B1B),
                 textColor = Color.White,
-                trailingIconColor =Color.White,
+                trailingIconColor = Color.White,
                 focusedTrailingIconColor = Color.White,
                 disabledLeadingIconColor = Color.White,
                 focusedIndicatorColor = Color(0xFF1B1B1B)
-               )
+            )
         )
 
         // menu
-        ExposedDropdownMenu(
-            modifier = Modifier.background(Color(0xFF1B1B1B)),
+        ExposedDropdownMenu(modifier = Modifier.background(Color(0xFF1B1B1B)),
             expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
+            onDismissRequest = { expanded = false }) {
             listItems.forEach { selectedOption ->
                 // menu item
-                DropdownMenuItem(modifier = Modifier.background(Color(0xFF1B1B1B)),onClick = {
+                DropdownMenuItem(modifier = Modifier.background(Color(0xFF1B1B1B)), onClick = {
                     selectedItem = selectedOption
 
                     //Actualizo en mi viewModel el index seleccionado para cuando se confirme
@@ -423,10 +449,14 @@ fun DropDownDetails(updateDDV: (Int) -> Unit) {
 }
 
 @Composable
-fun ConfirmButton(text: String, onClick: () -> Unit){
-    Button(modifier = Modifier
-        .fillMaxHeight(0.8f)
-        .padding(end = 5.dp), onClick = { onClick() },colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)) {
+fun ConfirmButton(text: String, onClick: () -> Unit) {
+    Button(
+        modifier = Modifier
+            .fillMaxHeight(0.8f)
+            .padding(end = 5.dp),
+        onClick = { onClick() },
+        colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+    ) {
         Text(text = text, color = Color.Black)
     }
 }
@@ -434,20 +464,17 @@ fun ConfirmButton(text: String, onClick: () -> Unit){
 @Composable
 fun ratingStars(currentIndex: Int, updateStars: (Int) -> Unit) {
 
-    val starList = listOf<Int>(1,2,3,4,5)
+    val starList = listOf<Int>(1, 2, 3, 4, 5)
 
     Row() {
         starList.forEach {
             IconButton(onClick = { updateStars(it) }) {
                 Icon(
-                    imageVector = ImageVector.vectorResource(id =
-                        if (currentIndex>=it) {
+                    imageVector = ImageVector.vectorResource(
+                        id = if (currentIndex >= it) {
                             R.drawable.starfilled
                         } else R.drawable.star
-                    ),
-                    "",
-                    modifier = Modifier.size(30.dp),
-                    tint = Color.Yellow
+                    ), "", modifier = Modifier.size(30.dp), tint = Color.Yellow
                 )
             }
         }

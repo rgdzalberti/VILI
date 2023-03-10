@@ -158,7 +158,7 @@ fun HomeScreen(navController: NavController, viewModel: MainScreenViewModel = hi
 
 
                 2 -> {
-                    gameList(navController)
+                    GameList(navController)
                 }
 
             }
@@ -584,7 +584,7 @@ fun SettingsMenu(logOut: () -> Unit, switchSettings: () -> Unit) {
             Modifier
 
                 .weight(boxWidth)
-) {
+        ) {
 
             Button(modifier = Modifier.fillMaxSize(), onClick = {}) {}
 
@@ -708,11 +708,3 @@ fun BackPressHandler(
         }
     }
 }
-
-
-
-
-
-
-
-
