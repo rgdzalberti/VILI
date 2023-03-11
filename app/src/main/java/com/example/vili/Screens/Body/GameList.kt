@@ -37,6 +37,8 @@ fun previewGameList() {
 @Composable
 fun GameList(navController: NavController, viewModel: GameListViewModel = hiltViewModel()) {
 
+    //Actualizo el icono del BottomBar
+    BottomBarClass.updateIndex(2)
 
     Scaffold(bottomBar = { BottomBar() })
     {
@@ -49,8 +51,8 @@ fun GameList(navController: NavController, viewModel: GameListViewModel = hiltVi
         viewModel.popBack()
         navController.popBackStack()
     }
-    //Además si se utiliza el popBack del OS también se actualizará el icono
-    BackPressHandler(onBackPressed = { BottomBarClass.updateIndex(1);navController.popBackStack()  })
+    //PopStackBack con OS
+    BackPressHandler(onBackPressed = { navController.popBackStack()  })
 
     //Aquí cambio la pantalla si se toca el bottomBar
     if (NavigationFunctions.changeScreen.value){

@@ -49,7 +49,6 @@ fun BottomBar(viewModel: MainScreenViewModel = hiltViewModel()) {
             BottomNavigationItem(icon = {
                 Icon(imageVector = Icons.Default.Home, "")
             }, selected = (BottomBarClass.selectedIndex.value == 1), onClick = {
-                updateIndex(1)
                 NavigationFunctions.changeScreen(1)
             }, selectedContentColor = Color.Red, unselectedContentColor = Color.White
             )
@@ -61,7 +60,6 @@ fun BottomBar(viewModel: MainScreenViewModel = hiltViewModel()) {
                     modifier = Modifier.size(30.dp)
                 )
             }, selected = (BottomBarClass.selectedIndex.value == 2), onClick = {
-                updateIndex(2)
                 NavigationFunctions.changeScreen(2)
             }, selectedContentColor = Color.Red, unselectedContentColor = Color.White
             )

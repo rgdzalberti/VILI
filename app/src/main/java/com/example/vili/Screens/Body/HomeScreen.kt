@@ -53,6 +53,8 @@ fun HomeScreen(nav: NavController, viewModel:MainScreenViewModel = hiltViewModel
     //Modifico la barra superior
     systemBarColor(color = ObscureBlack)
 
+    //Actualizo el icono del Bottombar
+    BottomBarClass.updateIndex(1)
 
     //La función que contiene la pantalla está contenida por una Box, esto se hace porque dentro de la Box
     //en la parte de abajo se ponen los submenus para que se superpongan
