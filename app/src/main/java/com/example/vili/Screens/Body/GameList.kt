@@ -1,5 +1,9 @@
 package viliApp
 
+import android.annotation.SuppressLint
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -14,6 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.vili.Common.Complex.BottomBar
+import com.example.vili.Common.Complex.BottomBarClass
+import com.example.vili.Common.Composables.BackPressHandler
 import com.example.vili.R
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.CoroutineScope
@@ -26,11 +33,40 @@ fun previewGameList() {
     GameList(rememberNavController())
 }
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@Composable
+fun GameList(navController: NavController, viewModel: GameListViewModel = hiltViewModel()) {
+
+
+    Scaffold(bottomBar = { BottomBar() })
+    {
+        GameListBody(navController = navController)
+    }
+
+    //Icono arriba izquierda popear pantalla
+    if (viewModel.popBack){
+        BottomBarClass.updateIndex(1)
+        viewModel.popBack()
+        navController.popBackStack()
+    }
+    //Además si se utiliza el popBack del OS también se actualizará el icono
+    BackPressHandler(onBackPressed = { BottomBarClass.updateIndex(1);navController.popBackStack()  })
+
+    //Aquí cambio la pantalla si se toca el bottomBar
+    if (NavigationFunctions.changeScreen.value){
+        NavigationFunctions.changeScreen(0)
+        when(NavigationFunctions.screenID.value){
+            1 -> {navController.navigate(route = Destinations.MainScreen.ruta)}
+            2 -> {}
+        }
+    }
+
+}
+
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun GameList(navController: NavController, viewModel: GameListViewModel = hiltViewModel(), MainScreenViewModel:MainScreenViewModel = hiltViewModel()) {
-
-    systemBarColor(color = Color(0xFF0A0A0A))
+fun GameListBody(navController:NavController,viewModel:GameListViewModel = hiltViewModel(),MainScreenViewModel: MainScreenViewModel = hiltViewModel()){
+    systemBarColor(color = Color.Black)
     getDeviceConfig()
 
     //No se puede poner en el viewmodel. Utilizo esto para controlar la pestaña y su animación
@@ -43,16 +79,19 @@ fun GameList(navController: NavController, viewModel: GameListViewModel = hiltVi
         reloadGameList(viewModel::reloadList)
     }
 
+    Column() {
+
+
     Column(modifier = Modifier
         .fillMaxWidth()
-        .height(DeviceConfig.heightPercentage(10))
+        .fillMaxHeight(0.1f)
         .background(Color.Black)) {
 
         Row(
             Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.5f)) {
-            TopBarList(goHome = MainScreenViewModel::updateIndex, dropDown = viewModel::sortList , nav = navController,viewModel.tabIndex)
+            TopBarList(dropDown = viewModel::sortList , nav = navController,viewModel.tabIndex,viewModel::popBack)
         }
 
 
@@ -87,6 +126,7 @@ fun GameList(navController: NavController, viewModel: GameListViewModel = hiltVi
 
     }
 
+    }
 }
 
 
@@ -129,7 +169,7 @@ fun tabData(tabIndex: Int, updateTabIndex:(Int) -> Unit, pagerState: PagerState,
 }
 
 @Composable
-fun TopBarList(goHome: (Int) -> Unit, dropDown: (Int) -> Unit, nav:NavController,page:Int){
+fun TopBarList(dropDown: (Int) -> Unit, nav:NavController, page:Int, navigate:()->Unit){
 
     //TOPBAR
     Row(
@@ -143,13 +183,13 @@ fun TopBarList(goHome: (Int) -> Unit, dropDown: (Int) -> Unit, nav:NavController
     {
         Box(
             Modifier
-                .background(Color.Transparent) //Color(0xFF0A0A0A)
+                .background(Color.Transparent)
                 .fillMaxHeight()
                 .weight(0.33f)
                 .padding(start = 5.dp),
             contentAlignment = Alignment.CenterStart
         ) {
-            IconButton(onClick = { goHome(1) }) {
+            IconButton(onClick = { BottomBarClass.updateIndex(1); navigate() }) {
                 Icon(
                     imageVector = ImageVector.vectorResource(id = R.drawable.arrowback),
                     "",
@@ -216,7 +256,9 @@ fun DropDownSort(sortList: (Int) -> Unit, page: Int) {
 
         // menu
         ExposedDropdownMenu(
-            modifier = Modifier.background(Color(0xFF1B1B1B)).width(100.dp),
+            modifier = Modifier
+                .background(Color(0xFF1B1B1B))
+                .width(100.dp),
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {

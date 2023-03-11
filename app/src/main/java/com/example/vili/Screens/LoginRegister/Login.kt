@@ -1,7 +1,6 @@
 package viliApp
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,8 +35,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.vili.Model.Querys.FBAuth
 import com.example.vili.R
 import viliApp.DeviceConfig.Companion.heightPercentage
+import viliApp.NavigationFunctions.Companion.NavigatePop
 
 
 @Preview
@@ -58,7 +59,7 @@ fun LoginScreen(navController: NavController, viewModel : LoginViewModel = hiltV
     //Si el ViewModel recibe la orden de cambiar de pantalla aquí se cumple
     if (viewModel.popNContinue){
         viewModel.popNContinue = false
-        NavigatePop(navController = navController, destination = Destinations.Pantalla2.ruta)
+        NavigatePop(navController = navController, destination = Destinations.MainScreen.ruta)
     }
 
     //Everything Container
@@ -107,7 +108,7 @@ fun LoginScreen(navController: NavController, viewModel : LoginViewModel = hiltV
 
                 ////////////////
 
-                LoginFields(isLogging, { isLogging = !isLogging },viewModel.email,viewModel.password,viewModel.repeatPassword,viewModel::onEmailChange,viewModel::onPasswordChange,viewModel::onRepeatPasswordChange, viewModel::onLogInClick, viewModel::onSignUp,navController)
+                LoginFields(isLogging, { isLogging = !isLogging },viewModel.email,viewModel.password,viewModel.repeatPassword,viewModel::onEmailChange,viewModel::onPasswordChange,viewModel::onRepeatPasswordChange, navController,viewModel::turnPopNContinue)
 
 
             }
@@ -144,14 +145,14 @@ fun Logo() {
 
 
 @Composable
-fun LoginFields(isLogging: Boolean, toggleLogin: () -> Unit, email:String, password:String, repeatPassword:String, onEmailChange: (String) -> Unit, onPasswordChange: (String) -> Unit, onRepeatPasswordChange: (String) -> Unit, onLogin: (Context) -> Unit, onSignUp: (Context) -> Unit, nav: NavController) {
+fun LoginFields(isLogging: Boolean, toggleLogin: () -> Unit, email:String, password:String, repeatPassword:String, onEmailChange: (String) -> Unit, onPasswordChange: (String) -> Unit, onRepeatPasswordChange: (String) -> Unit, nav: NavController,turnPopNContinue:()->Unit) {
     EmailTextField(email,onEmailChange)
     PasswordTextField(password,onPasswordChange)
     if (!isLogging) {
         ConfirmPasswordTextField(repeatPassword,onRepeatPasswordChange)
     }
     Spacer(Modifier.height(heightPercentage(3)))
-    validateButton(nav,isLogging,onLogin,onSignUp)
+    validateButton(nav,isLogging,email,password,turnPopNContinue)
     ClickableText(isLogging, toggleLogin)
 
 
@@ -313,17 +314,30 @@ fun ConfirmPasswordTextField(text: String, onValueChange: (String) -> Unit) {
     }
 }
 @Composable
-fun validateButton(nav: NavController,isLogging: Boolean,onLogin: (Context) -> Unit,onSignUp: (Context) -> Unit) {
+fun validateButton(nav: NavController,isLogging: Boolean, email:String,password: String, turnPopNContinue:()->Unit ) {
 
     val context = LocalContext.current
 
     Button(
         onClick ={
-            if (isLogging) {
-                onLogin(context)
-            } else {
-                onSignUp(context)
+
+            when (isLogging) {
+                true -> {
+                    FBAuth.onLogIn(email, password, context) { success ->
+                        if (success) {
+                            turnPopNContinue()
+                        }
+                    }
+                }
+                false -> {
+                    FBAuth.onSignUp(email, password, context) { success ->
+                        if (success) {
+                            turnPopNContinue()
+                        }
+                    }
+                }
             }
+
         },
         colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
     ) {

@@ -1,14 +1,11 @@
 package viliApp
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import viliApp.CentralizedData.Companion.getGameID
 import javax.inject.Inject
@@ -37,7 +34,7 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
 
         //Hago una query en busca de información sobre este juego
         viewModelScope.launch{
-            FBQuery.getGame(gameID)
+            FBCRUD.getGame(gameID)
                 .collect {
                     gameData = it; listaGenres = gameData.genres.split(",")
 
@@ -61,24 +58,24 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
 
     //COMPLETED
     fun addGameToUserList(score: Int = 0, comment: String = ""){
-        FBQuery.saveGameToUserList(gameData, score, comment)
+        FBCRUD.saveGameToUserList(gameData, score, comment)
     }
 
     fun removeGameFromUserList(gameID: String){
 
         var wasGameInList = false
-        FBQuery.removeGameFromUserList(gameID)
+        FBCRUD.removeGameFromUserList(gameID)
 
     }
     //PLANNING
     fun addGameToUserPlanningList(score: Int = 0, comment: String = ""){
-        FBQuery.saveGameToUserPlanningList(gameData)
+        FBCRUD.saveGameToUserPlanningList(gameData)
     }
 
     fun removeGameFromUserPlanningList(gameID: String){
 
         var wasGameInList = false
-        FBQuery.removeGameFromUserPlanningList(gameID)
+        FBCRUD.removeGameFromUserPlanningList(gameID)
 
     }
 

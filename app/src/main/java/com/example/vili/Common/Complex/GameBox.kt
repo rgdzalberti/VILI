@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -15,12 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlin.time.Duration.Companion.seconds
+import com.example.vili.Common.Complex.GameBoxViewModel
 
 @Composable
 fun GameBox(
@@ -81,7 +77,7 @@ fun GameBox(
         Column(
             Modifier
                 .fillMaxWidth()
-                .height(47.dp)
+                .height(50.dp)
                 .background(Color(0x860A0A0A))
         ) {
 
@@ -94,7 +90,7 @@ fun GameBox(
             if (Rating != 0) {
                 Text(
                     text = rating,
-                    modifier = Modifier.padding(start = 5.dp),
+                    modifier = Modifier.padding(start = 5.dp, bottom = 0.dp),
                     color = Color.White
                 )
             }
