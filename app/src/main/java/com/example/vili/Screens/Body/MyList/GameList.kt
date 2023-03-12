@@ -25,7 +25,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import viliApp.*
 
-//TODO HACER QUE SE PUEDA ACTUALIZAR SIN BORRAR
 @Preview
 @Composable
 fun previewGameList() {

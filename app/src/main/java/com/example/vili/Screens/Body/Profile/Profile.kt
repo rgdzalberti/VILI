@@ -1,6 +1,7 @@
 package com.example.vili.Screens.Body.Profile
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,15 +42,16 @@ import com.example.vili.Common.Composables.SettingsMenu
 import com.example.vili.Common.Composables.TopBar
 import com.example.vili.Model.Querys.FBAuth
 import com.example.vili.Screens.Body.Home.MainScreenViewModel
+import com.example.vili.Screens.Body.MyList.GameListBody
 import com.example.vili.myApp.theme.LightBlack
+import com.example.vili.myApp.theme.LightBlack2
 import com.example.vili.myApp.theme.ObscureBlack
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import viliApp.Destinations
+import viliApp.DeviceConfig
 import viliApp.NavigationFunctions
 import viliApp.systemBarColor
 
@@ -68,92 +71,87 @@ fun Profile(
     MainScreenViewModel: MainScreenViewModel = hiltViewModel(), viewModel: ProfileViewModel = hiltViewModel()
 ) {
 
-    val refreshing by remember {
-        mutableStateOf(false)
+
+    val pullRefreshState = rememberPullRefreshState(viewModel.refreshing, { viewModel.refresh() })
+
+    //Guardo el UID nada mas entrar por si viajo a una lista
+    if (profileID != null) {
+        viewModel.setProfileUID(profileID)
     }
-    val pullRefreshState = rememberPullRefreshState(refreshing, { viewModel.refresh() })
 
     //Upper Bar Color
     systemBarColor(color = ObscureBlack)
     //Actualizo el icono del Bottombar
     BottomBarClass.updateIndex(0)
 
+
     Scaffold(bottomBar = { BottomBar() }) {
+        Box(
+            Modifier
+                .pullRefresh(pullRefreshState)
+                .verticalScroll(rememberScrollState())
 
-            Box(
-                Modifier
-                    .pullRefresh(pullRefreshState)
-                    //.verticalScroll(rememberScrollState())
+        ) {
 
-            ) {
-
-
-                //Este es el cuerpo de la pantalla
-                ProfileBody(nav = nav, profileID = profileID)
+            //Este es el cuerpo de la pantalla
+            ProfileBody(nav = nav, profileID = profileID)
 
 
-                //region SUBMENU SEARCH
-                AnimatedVisibility(
-                    visible = MainScreenViewModel.enableSearchMenu,
-                    enter = slideInHorizontally(
-                        initialOffsetX = { fullWidth -> +fullWidth }, animationSpec = tween(
-                            durationMillis = 500, easing = LinearOutSlowInEasing
-                        )
-                    ),
-                    exit = slideOutHorizontally(
-                        targetOffsetX = { fullWidth -> +fullWidth }, animationSpec = tween(
-                            durationMillis = 300, easing = FastOutLinearInEasing
-                        )
+            //region SUBMENU SEARCH
+            AnimatedVisibility(
+                visible = MainScreenViewModel.enableSearchMenu,
+                enter = slideInHorizontally(
+                    initialOffsetX = { fullWidth -> +fullWidth }, animationSpec = tween(
+                        durationMillis = 500, easing = LinearOutSlowInEasing
                     )
-                ) {
-                    //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
-                    //Sino que este menú se vuelva a plegar
-                    BackPressHandler(MainScreenViewModel::searchBackPressed)
-                    SearchMenu(
-                        MainScreenViewModel.searchText,
-                        MainScreenViewModel::onSearchTextChange,
-                        MainScreenViewModel.gameList,
-                        nav
+                ),
+                exit = slideOutHorizontally(
+                    targetOffsetX = { fullWidth -> +fullWidth }, animationSpec = tween(
+                        durationMillis = 300, easing = FastOutLinearInEasing
                     )
-                }
-                //endregion
-
-                //region SUBMENU SETTINGS
-                AnimatedVisibility(
-                    visible = MainScreenViewModel.enableSettingsMenu,
-                    enter = slideInHorizontally(
-                        initialOffsetX = { fullWidth -> -fullWidth }, animationSpec = tween(
-                            durationMillis = 300, easing = LinearOutSlowInEasing
-                        )
-                    ),
-                    exit = slideOutHorizontally(
-                        targetOffsetX = { fullWidth -> -fullWidth }, animationSpec = tween(
-                            durationMillis = 200, easing = FastOutLinearInEasing
-                        )
-                    )
-                ) {
-                    //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
-                    //Sino que este menú se vuelva a plegar
-                    BackPressHandler(MainScreenViewModel::settingsBackPressed)
-                    SettingsMenu(
-                        MainScreenViewModel::logOut,
-                        MainScreenViewModel::switchSettings
-                    )
-                }
-
-                //endregion
-
-                PullRefreshIndicator(
-                    refreshing,
-                    pullRefreshState,
-                    Modifier.align(Alignment.TopCenter)
                 )
+            ) {
+                //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
+                //Sino que este menú se vuelva a plegar
+                BackPressHandler(MainScreenViewModel::searchBackPressed)
+                SearchMenu(
+                    MainScreenViewModel.searchText,
+                    MainScreenViewModel::onSearchTextChange,
+                    MainScreenViewModel.gameList,
+                    nav
+                )
+            }
+            //endregion
 
-
+            //region SUBMENU SETTINGS
+            AnimatedVisibility(
+                visible = MainScreenViewModel.enableSettingsMenu,
+                enter = slideInHorizontally(
+                    initialOffsetX = { fullWidth -> -fullWidth }, animationSpec = tween(
+                        durationMillis = 300, easing = LinearOutSlowInEasing
+                    )
+                ),
+                exit = slideOutHorizontally(
+                    targetOffsetX = { fullWidth -> -fullWidth }, animationSpec = tween(
+                        durationMillis = 200, easing = FastOutLinearInEasing
+                    )
+                )
+            ) {
+                //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
+                //Sino que este menú se vuelva a plegar
+                BackPressHandler(MainScreenViewModel::settingsBackPressed)
+                SettingsMenu(
+                    MainScreenViewModel::logOut,
+                    MainScreenViewModel::switchSettings
+                )
             }
 
+            //endregion
+
+            PullRefreshIndicator(viewModel.refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
 
 
+        }
     }
 
     //region NAVIGATE
@@ -166,6 +164,16 @@ fun Profile(
             }
             2 -> {
                 nav.navigate(route = Destinations.ListScreen.ruta)
+            }
+            4->{
+                //Si ha viajado a su propia lista se le cambia de pestaña
+                if (profileID==FBAuth.UID){
+                    nav.navigate(route = Destinations.ListScreen.ruta)
+                } else {
+                    //Si no, le muestro la lista, actualizando primero los datos
+                    viewModel.updateGameListValues()
+                    GameListBody(navController = nav)
+                }
             }
         }
     }
@@ -191,7 +199,8 @@ fun ProfileBody(
 
     Column(
         Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .height(DeviceConfig.heightPercentage(100))
             .background(LightBlack)
     ) {
 
@@ -260,9 +269,68 @@ fun ProfileBody(
                 Modifier
                     .background(Color.Transparent)
                     .offset(y = (40).dp)) {
-                Text(modifier = Modifier.fillMaxWidth(), text = "${FBAuth.getUserEmail()?.substringBefore("@")}", textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp)
+                Text(modifier = Modifier.fillMaxWidth(), text = "${FBAuth.getUserEmail()?.substringBefore("@")}", textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             }
             //endregion
+        }
+        //endregion
+
+        //region Some Stats
+        Row(
+            Modifier
+                .fillMaxHeight(0.25f)
+                .fillMaxWidth()
+                .background(Color.Transparent)) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .weight(0.5f)
+                    .padding(5.dp)
+                    .background(LightBlack2, RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center
+                    ) {
+                Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "0", color = Color.White, textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold) //TODO 
+                    Text(text = "Juegos Jugados", color = Color.White, textAlign = TextAlign.Center, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .weight(0.5f)
+                    .padding(5.dp)
+                    .background(LightBlack2, RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "0", color = Color.White, textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold)//TODO 
+                    Text(text = "Juegos Planning", color = Color.White, textAlign = TextAlign.Center, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+        //endregion
+
+        //region navigate List
+        Column(Modifier.padding(5.dp)) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.25f)
+                    .background(LightBlack2, RoundedCornerShape(10.dp))
+                    .padding(5.dp)
+                    .clickable { NavigationFunctions.changeScreen(4) },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "VISITAR  LISTA",
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
         //endregion
 

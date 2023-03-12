@@ -1,5 +1,6 @@
 package viliApp
 
+import com.example.vili.Model.Querys.FBAuth
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
@@ -50,10 +51,10 @@ class FBCRUD {
 
         }
 
-        fun getUserGameList(): Flow<List<UserGame>> = callbackFlow{
+        fun getUserGameList(uid: String? = FBAuth.UID): Flow<List<UserGame>> = callbackFlow{
 
             val db = Firebase.firestore
-            val userUID = FirebaseAuth.getInstance().currentUser?.uid
+            val userUID = uid
             val reference = db.collection("UserDATA").document(userUID.toString())
 
             val gameList = mutableListOf<UserGame>()
@@ -97,10 +98,10 @@ class FBCRUD {
         }
 
         //Obtener lista de juegos de usuario
-        fun getUserGamePlanningList(): Flow<List<Game>> = callbackFlow{
+        fun getUserGamePlanningList(uid: String? = FBAuth.UID): Flow<List<Game>> = callbackFlow{
 
             val db = Firebase.firestore
-            val userUID = FirebaseAuth.getInstance().currentUser?.uid
+            val userUID = uid
             val reference = db.collection("UserDATA").document(userUID.toString())
 
             val gameList = mutableListOf<Game>()
