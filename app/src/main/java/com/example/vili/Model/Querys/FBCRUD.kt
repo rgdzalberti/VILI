@@ -57,7 +57,7 @@ class FBCRUD {
 
         }
 
-        fun getUserGameList(uid: String? = FBAuth.UID): Flow<List<UserGame>> = callbackFlow {
+        fun getUserGameList(uid: String): Flow<List<UserGame>> = callbackFlow {
 
             val db = Firebase.firestore
             val userUID = uid

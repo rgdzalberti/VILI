@@ -68,10 +68,13 @@ fun Profile(
     val pullRefreshState = rememberPullRefreshState(viewModel.refreshing, { viewModel.refresh() })
 
     //Guardo el UID nada mas entrar por si viajo a una lista
-    if (profileID != viewModel.profileID) {
+    /*
+    if (profileID != null) {
         viewModel.setProfileUID(profileID)
         viewModel.init()
     }
+
+     */
 
     //Upper Bar Color
     systemBarColor(color = ObscureBlack)
@@ -322,6 +325,28 @@ fun ProfileBody(
         //endregion
 
 
+        //region navigate List
+        Column(Modifier.padding(5.dp)) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.25f)
+                    .background(LightBlack2, RoundedCornerShape(10.dp))
+                    .padding(5.dp)
+                    .clickable { NavigationFunctions.changeScreen(4) },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "VISITAR  LISTA",
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+        //endregion
 
     }
 

@@ -194,7 +194,7 @@ fun UserLazyList(nav: NavController, searchText: String, userProfileList: List<U
 
 @Composable
 fun UserBox(nav:NavController,url: String, name: String, id:String) {
-    Box(Modifier.fillMaxSize().clickable { CentralizedData.profileID.value = id; nav.navigate(route = Destinations.Profile.ruta) }) {
+    Box(Modifier.fillMaxSize()) {
             Image(
                 modifier = Modifier
                     .fillMaxSize()

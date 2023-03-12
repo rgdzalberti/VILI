@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.example.vili.Model.Querys.FBAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
@@ -21,19 +23,19 @@ class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) 
 
     init {
 
-        if (CentralizedData.gameList.value.isEmpty()) {
+
             viewModelScope.launch {
-                FBCRUD.getUserGameList()
+                FBCRUD.getUserGameList(Firebase.auth.uid.toString())
                     .collect { CentralizedData.gameList.value = it }
             }
-        }
+
 
 
     }
 
     fun reloadList(){
         viewModelScope.launch {
-            FBCRUD.getUserGameList()
+            FBCRUD.getUserGameList(Firebase.auth.uid.toString())
                 .onCompletion { CentralizedData.tellGameListToReload(false) }
                 .collect { CentralizedData.gameList.value = it }
         }

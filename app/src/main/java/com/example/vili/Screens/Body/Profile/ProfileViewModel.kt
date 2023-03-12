@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.example.vili.Model.Querys.FBAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -37,10 +39,29 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
     //endregion
 
     init {
-        //Uso una función init ya que en el composable actualizo primero el id así que el init ha de ir después
+        profileID = Firebase.auth.uid.toString()
+
+        viewModelScope.launch {
+            updateImages()
+        }
+
+        //region Stats
+        viewModelScope.launch {
+            FBCRUD.getUserGameList(profileID)
+                .collect { playedGames = it.size }
+        }
+
+        viewModelScope.launch {
+            FBCRUD.getUserGamePlanningList(profileID)
+                .collect { planningGames = it.size }
+        }
+        Log.i("wawa",profileID)
+        init()
     }
 
     fun init() {
+
+
         viewModelScope.launch {
             updateImages()
         }
