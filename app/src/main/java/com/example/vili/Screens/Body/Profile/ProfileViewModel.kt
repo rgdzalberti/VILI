@@ -13,67 +13,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import javax.inject.Inject
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import viliApp.CentralizedData
 import viliApp.FBCRUD
-
-/*
-@HiltViewModel
-class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : ViewModel() {
-
-    var pfpURL by savedStateHandle.saveable { mutableStateOf("") }
-    var bannerURL by savedStateHandle.saveable { mutableStateOf("") }
-
-    var refreshing by savedStateHandle.saveable { mutableStateOf(false) }
-
-    init {
-        viewModelScope.launch {
-            updateImages().collect()
-        }
-    }
-
-    fun refresh(){
-
-        refreshing = true
-
-        pfpURL = ""
-        bannerURL = ""
-
-        viewModelScope.launch {
-            updateImages().collect {
-                if (it) refreshing = false; Log.i("wawa","aaaa")
-            }
-        }
-
-    }
-
-    fun updateImages(): Flow<Boolean> = flow{
-
-        var loaded = 0
-
-        FBAuth.UID?.let {
-            FBStorage.getPFPURL(it) { url ->
-                if (url.isBlank()) { pfpURL = "https://pbs.twimg.com/media/FprEeyJXwAI-hre.jpg"} else pfpURL = url
-                loaded++
-                if (loaded==2) {emit(true)}
-                ; Log.i("wawa","1111")
-            }
-        }
-
-        FBAuth.UID?.let {
-            FBStorage.getBannerURL(it) { url ->
-                if (url.isBlank()) { bannerURL = "https://wallpaperaccess.com/full/2635957.jpg"} else bannerURL = url
-                loaded++
-                ; Log.i("wawa","2222")
-            }
-        }
-
-
-    }
-
-
-
-}
- */
+import kotlin.coroutines.suspendCoroutine
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : ViewModel() {
@@ -84,58 +29,59 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
     var bannerURL by savedStateHandle.saveable { mutableStateOf("") }
 
     var refreshing by savedStateHandle.saveable { mutableStateOf(false) }
+    var updatingImages by savedStateHandle.saveable { mutableStateOf(0) }
+
+    //region Stats Variables
+    var playedGames by savedStateHandle.saveable { mutableStateOf(0) }
+    var planningGames by savedStateHandle.saveable { mutableStateOf(0) }
+    //endregion
 
     init {
         viewModelScope.launch {
             updateImages()
         }
+
+        //region Stats
+        viewModelScope.launch {
+            FBCRUD.getUserGameList(profileID)
+                .collect { playedGames = it.size }
+        }
+
+        viewModelScope.launch {
+            FBCRUD.getUserGamePlanningList(profileID)
+                .collect { planningGames = it.size }
+        }
+        //endregion
+
     }
     //region Funciones para el Swipe Refresh
 
+
     fun refresh(){
-
-        refreshing = true
-
         pfpURL = ""
         bannerURL = ""
-
+        refreshing = true
 
         viewModelScope.launch {
-            if (updateImages()) {refreshing=false; Log.i("wawa","aaaa")}
+            updateImages()
         }
 
     }
-    suspend fun updateImages():Boolean = coroutineScope{
 
-        var loaded = 0
+    suspend fun updateImages(){
 
-        val pfp = async {
-            FBAuth.UID?.let {
-                FBStorage.getPFPURL(it) { url ->
-                    if (url.isBlank()) {
-                        pfpURL = "https://pbs.twimg.com/media/FprEeyJXwAI-hre.jpg"
-                    } else pfpURL = url
-                    loaded++
-                    ; Log.i("wawa", "1111")
-                }
+
+        FBAuth.UID?.let {
+            val pfp = FBStorage.getPFPURL(it)
+            if (!pfp.isBlank()) pfpURL = pfp; updatingImages++
+        }
+
+        FBAuth.UID?.let {
+            val banner = FBStorage.getBannerURL(it){ url->
+                if (!url.isBlank()) bannerURL = url ; updatingImages++
             }
         }
 
-        val banner = async {
-            FBAuth.UID?.let {
-                FBStorage.getBannerURL(it) { url ->
-                    if (url.isBlank()) {
-                        bannerURL = "https://wallpaperaccess.com/full/2635957.jpg"
-                    } else bannerURL = url
-                    loaded++
-                    ; Log.i("wawa", "2222")
-                }
-            }
-        }
-
-        pfp.await()
-        banner.await()
-        true
     }
     //endregion
 
@@ -166,5 +112,6 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
 
     }
     //endregion
+
 
 }

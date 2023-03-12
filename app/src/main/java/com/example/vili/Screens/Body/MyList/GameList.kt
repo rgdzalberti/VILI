@@ -102,7 +102,7 @@ fun GameListBody(navController:NavController, viewModel: GameListViewModel = hil
                 .fillMaxHeight()
                 .background(Color.Black),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-            tabData(viewModel.tabIndex,viewModel::updateTabData,pagerState,scope)
+            TabDATAList(viewModel.tabIndex,viewModel::updateTabData,pagerState,scope)
         }
 
     }
@@ -138,7 +138,7 @@ fun reloadGameList(reloadList: () -> Unit){
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun tabData(tabIndex: Int, updateTabIndex:(Int) -> Unit, pagerState: PagerState, scope: CoroutineScope){
+fun TabDATAList(tabIndex: Int, updateTabIndex:(Int) -> Unit, pagerState: PagerState, scope: CoroutineScope){
 
     val tabData = listOf(
         "Completado",
