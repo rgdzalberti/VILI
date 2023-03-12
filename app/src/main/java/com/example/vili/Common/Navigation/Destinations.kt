@@ -6,6 +6,9 @@ sealed class Destinations (val ruta : String) {
     object MainScreen: Destinations("MainScreen")
     object ListScreen: Destinations("GameList")
     object Pantalla3: Destinations("GameDetails")
+    object Profile: Destinations("Profile")
+
+    object EditImage: Destinations("EditImage")
 
 
 }

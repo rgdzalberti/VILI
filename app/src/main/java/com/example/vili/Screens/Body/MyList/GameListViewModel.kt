@@ -1,4 +1,4 @@
-package viliApp
+package com.example.vili.Screens.Body.MyList
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -8,6 +8,8 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
+import viliApp.CentralizedData
+import viliApp.FBCRUD
 import javax.inject.Inject
 
 @HiltViewModel
@@ -52,8 +54,10 @@ class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) 
         when(newValue){
 
             0 -> {
-                if (tabIndex==0){CentralizedData.gameList.value = CentralizedData.gameList.value.sortedBy { it.name }}
-                else if (tabIndex==1){CentralizedData.planningList.value = CentralizedData.planningList.value.sortedBy { it.name }}
+                if (tabIndex==0){
+                    CentralizedData.gameList.value = CentralizedData.gameList.value.sortedBy { it.name }}
+                else if (tabIndex==1){
+                    CentralizedData.planningList.value = CentralizedData.planningList.value.sortedBy { it.name }}
 
             }
 

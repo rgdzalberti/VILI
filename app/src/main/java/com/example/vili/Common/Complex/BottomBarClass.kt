@@ -13,6 +13,7 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -21,9 +22,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.vili.Common.Complex.BottomBarClass.Companion.updateIndex
 import com.example.vili.R
-import viliApp.MainScreenViewModel
+import com.example.vili.Screens.Body.Home.MainScreenViewModel
 import viliApp.NavigationFunctions
 
 @Composable
@@ -45,6 +45,13 @@ fun BottomBar(viewModel: MainScreenViewModel = hiltViewModel()) {
             elevation = 10.dp,
             backgroundColor = Color(0xDD050505)
         ) {
+
+            BottomNavigationItem(icon = {
+                Icon(imageVector = Icons.Default.Person, "")
+            }, selected = (BottomBarClass.selectedIndex.value == 0), onClick = {
+                NavigationFunctions.changeScreen(0)
+            }, selectedContentColor = Color.Red, unselectedContentColor = Color.White
+            )
 
             BottomNavigationItem(icon = {
                 Icon(imageVector = Icons.Default.Home, "")

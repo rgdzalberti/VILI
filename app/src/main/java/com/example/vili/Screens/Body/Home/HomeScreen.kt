@@ -1,4 +1,4 @@
-package com.example.vili.Screens.Body
+package com.example.vili.Screens.Body.Home
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -46,7 +46,7 @@ fun PreviewTTT(){
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun HomeScreen(nav: NavController, viewModel:MainScreenViewModel = hiltViewModel()){
+fun HomeScreen(nav: NavController, viewModel: MainScreenViewModel = hiltViewModel()){
 
     //Obtengo la información del dispositivo (DPI, Medidas)
     getDeviceConfig()
@@ -111,8 +111,9 @@ fun HomeScreen(nav: NavController, viewModel:MainScreenViewModel = hiltViewModel
 
     //region NAVIGATE
     if (NavigationFunctions.changeScreen.value){
-        NavigationFunctions.changeScreen(0)
+        NavigationFunctions.changeScreen(-1)
         when(NavigationFunctions.screenID.value){
+            0 -> {nav.navigate(route = Destinations.Profile.ruta)}
             1 -> {}
             2 -> {nav.navigate(route = Destinations.ListScreen.ruta)}
         }
@@ -128,13 +129,11 @@ fun HomeScreen(nav: NavController, viewModel:MainScreenViewModel = hiltViewModel
     }
     //endregion
 
-
-
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun HomeBody(nav:NavController,viewModel:MainScreenViewModel = hiltViewModel()){
+fun HomeBody(nav:NavController,viewModel: MainScreenViewModel = hiltViewModel()){
 
     Column(Modifier.background(LightBlack)) {
 

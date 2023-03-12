@@ -1,9 +1,6 @@
-package viliApp
+package com.example.vili.Screens.Body.MyList
 
 import android.annotation.SuppressLint
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.OnBackPressedDispatcher
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -22,11 +19,13 @@ import com.example.vili.Common.Complex.BottomBar
 import com.example.vili.Common.Complex.BottomBarClass
 import com.example.vili.Common.Composables.BackPressHandler
 import com.example.vili.R
+import com.example.vili.Screens.Body.Home.MainScreenViewModel
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import viliApp.*
 
-
+//TODO HACER QUE SE PUEDA ACTUALIZAR SIN BORRAR
 @Preview
 @Composable
 fun previewGameList() {
@@ -56,8 +55,9 @@ fun GameList(navController: NavController, viewModel: GameListViewModel = hiltVi
 
     //Aquí cambio la pantalla si se toca el bottomBar
     if (NavigationFunctions.changeScreen.value){
-        NavigationFunctions.changeScreen(0)
+        NavigationFunctions.changeScreen(-1)
         when(NavigationFunctions.screenID.value){
+            0 -> {navController.navigate(route = Destinations.Profile.ruta)}
             1 -> {navController.navigate(route = Destinations.MainScreen.ruta)}
             2 -> {}
         }
@@ -67,7 +67,7 @@ fun GameList(navController: NavController, viewModel: GameListViewModel = hiltVi
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun GameListBody(navController:NavController,viewModel:GameListViewModel = hiltViewModel(),MainScreenViewModel: MainScreenViewModel = hiltViewModel()){
+fun GameListBody(navController:NavController, viewModel: GameListViewModel = hiltViewModel(), MainScreenViewModel: MainScreenViewModel = hiltViewModel()){
     systemBarColor(color = Color.Black)
     getDeviceConfig()
 

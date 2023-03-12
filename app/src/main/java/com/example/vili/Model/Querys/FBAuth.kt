@@ -7,10 +7,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import java.lang.Exception
 
 class FBAuth {
     companion object {
+
+        val UID = Firebase.auth.uid
 
         //region LOGIN
         fun onLogIn(email: String, password: String, context: Context, callback: (Boolean) -> Unit) {
@@ -69,9 +73,11 @@ class FBAuth {
         }
         //endregion
 
-
-
-
+        //region getEmail
+        fun getUserEmail():String?{
+            return Firebase.auth.currentUser?.email
+        }
+        //endregion
 
 
     }

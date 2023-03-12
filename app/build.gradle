@@ -84,9 +84,10 @@ dependencies {
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.28.0"
 
     //Firebase
-    implementation platform('com.google.firebase:firebase-bom:31.1.1')
+    implementation platform('com.google.firebase:firebase-bom:31.2.3')
     implementation 'com.google.firebase:firebase-firestore-ktx'
     implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-storage-ktx'
 
     //Navigation
     def nav_version = "2.5.3"
@@ -119,6 +120,9 @@ dependencies {
 
     //Gravity Layout
     implementation "androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha08"
+
+    //Swipe Refresh
+    implementation 'com.google.accompanist:accompanist-swiperefresh:0.24.13-rc'
 
 }
 

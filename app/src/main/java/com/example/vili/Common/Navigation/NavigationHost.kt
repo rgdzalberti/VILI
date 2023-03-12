@@ -3,12 +3,15 @@ package viliApp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.vili.Screens.Body.HomeScreen
+import com.example.vili.Screens.Body.Home.HomeScreen
+import com.example.vili.Screens.Body.MyList.GameList
+import com.example.vili.Screens.Body.Profile.CurrentImage
+import com.example.vili.Screens.Body.Profile.Profile
+import com.example.vili.Screens.Body.Profile.EditImage
 
 @Composable
 fun NavigationHost (navController: NavHostController,startDestination: String){
@@ -24,9 +27,15 @@ fun NavigationHost (navController: NavHostController,startDestination: String){
         }
         composable(Destinations.ListScreen.ruta){
             GameList(navController = navController)
-        }        
+        }
         composable(route = Destinations.Pantalla3.ruta){
             GameDetails(navController)
+        }
+        composable(route = Destinations.Profile.ruta){
+            Profile(nav=navController)
+        }
+        composable(route = Destinations.EditImage.ruta){
+            EditImage(nav=navController, imageURL = CurrentImage.imageURL.value, editingPFP = CurrentImage.editingPFP.value)
         }
 
 
@@ -40,7 +49,7 @@ class NavigationFunctions(){
         var screenID = mutableStateOf(0)
 
         fun changeScreen(screenID: Int){
-            if (screenID != 0){this.screenID.value = screenID}
+            if (screenID != -1){this.screenID.value = screenID}
             changeScreen.value = !changeScreen.value
         }
         //endregion
