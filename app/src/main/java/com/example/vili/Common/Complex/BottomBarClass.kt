@@ -22,8 +22,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.vili.Model.Querys.FBAuth
 import com.example.vili.R
 import com.example.vili.Screens.Body.Home.MainScreenViewModel
+import viliApp.CentralizedData
 import viliApp.NavigationFunctions
 
 @Composable
@@ -49,6 +51,7 @@ fun BottomBar(viewModel: MainScreenViewModel = hiltViewModel()) {
             BottomNavigationItem(icon = {
                 Icon(imageVector = Icons.Default.Person, "")
             }, selected = (BottomBarClass.selectedIndex.value == 0), onClick = {
+                CentralizedData.profileID.value = FBAuth.UID.toString()
                 NavigationFunctions.changeScreen(0)
             }, selectedContentColor = Color.Red, unselectedContentColor = Color.White
             )
@@ -67,6 +70,7 @@ fun BottomBar(viewModel: MainScreenViewModel = hiltViewModel()) {
                     modifier = Modifier.size(30.dp)
                 )
             }, selected = (BottomBarClass.selectedIndex.value == 2), onClick = {
+                CentralizedData.profileID.value = FBAuth.UID.toString()
                 NavigationFunctions.changeScreen(2)
             }, selectedContentColor = Color.Red, unselectedContentColor = Color.White
             )

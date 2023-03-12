@@ -15,6 +15,7 @@ class CentralizedData {
         var gameList = mutableStateOf(listOf<UserGame>())
         var planningList = mutableStateOf(listOf<Game>())
 
+        var profileID = mutableStateOf("")
         var userProfileList = mutableStateOf(listOf<UserProfile>())
 
         //Mas detalles

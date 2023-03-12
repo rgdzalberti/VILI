@@ -10,5 +10,7 @@ sealed class Destinations (val ruta : String) {
 
     object EditImage: Destinations("EditImage")
 
+    object UserList:Destinations("UserList")
+
 
 }
