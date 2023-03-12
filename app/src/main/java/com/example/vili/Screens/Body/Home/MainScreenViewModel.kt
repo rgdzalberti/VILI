@@ -1,5 +1,6 @@
 package com.example.vili.Screens.Body.Home
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -41,6 +42,9 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
     var searchText by savedStateHandle.saveable { mutableStateOf("") }
 
     init {
+
+        Log.i("wawa",Firebase.auth.uid.toString())
+        Log.i("wawa",FBAuth.UID.toString())
 
         //Si no existe UserDATA para este user lo creo
         viewModelScope.launch {
@@ -96,6 +100,7 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
     //endregion
 
     fun logOut(){
+        CentralizedData.profileID.value = ""
         Firebase.auth.signOut()
         BottomBarClass.turnBottomBar()
         logOutnPop = !logOutnPop

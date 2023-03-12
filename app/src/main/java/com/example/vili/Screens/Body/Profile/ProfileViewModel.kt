@@ -95,25 +95,9 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
     //region update Game List (Por si viaja a la lista del usuario)
     fun updateGameListValues(){
 
-
         //Primero las vacío para que no muestre los juegos anteriores por un momento si la conexión es lenta
         CentralizedData.gameList.value = emptyList()
         CentralizedData.planningList.value = emptyList()
-
-        /*
-
-        //Ahora las relleno
-        viewModelScope.launch {
-            CentralizedData.gameList.value = FBCRUD.getUserGameList(profileID).sortedByDescending { it.userScore }
-        }
-
-            viewModelScope.launch {
-
-                CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(profileID).sortedBy { it.name }
-            }
-
-         */
-
 
     }
     //endregion
