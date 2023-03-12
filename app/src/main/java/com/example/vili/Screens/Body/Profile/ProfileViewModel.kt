@@ -47,16 +47,10 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
 
         //region Stats
         viewModelScope.launch {
-            FBCRUD.getUserGameList(profileID)
-                .collect { playedGames = it.size }
+            playedGames = FBCRUD.getUserGameList(profileID).size
         }
 
         viewModelScope.launch {
-            /*
-            FBCRUD.getUserGamePlanningList(profileID)
-                .collect { planningGames = it.size }
-
-             */
             planningGames = FBCRUD.getUserGamePlanningList(profileID).size
         }
     }
@@ -106,20 +100,19 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
         CentralizedData.gameList.value = emptyList()
         CentralizedData.planningList.value = emptyList()
 
+        /*
+
         //Ahora las relleno
         viewModelScope.launch {
-            FBCRUD.getUserGameList(profileID)
-                .collect { CentralizedData.gameList.value = it.sortedByDescending { it.userScore } }
-
-            viewModelScope.launch {/*
-                FBCRUD.getUserGamePlanningList(profileID)
-                    .collect { CentralizedData.planningList.value = it.sortedBy { it.name }}
-                    */
-                CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(profileID).sortedBy { it.name }
-            }
+            CentralizedData.gameList.value = FBCRUD.getUserGameList(profileID).sortedByDescending { it.userScore }
         }
 
+            viewModelScope.launch {
 
+                CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(profileID).sortedBy { it.name }
+            }
+
+         */
 
 
     }

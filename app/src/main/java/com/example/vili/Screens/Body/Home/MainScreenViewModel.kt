@@ -56,16 +56,11 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
 
         //Además inicializo la lista del jugador por si quiere ver sus estadisticas en el perfil
         viewModelScope.launch {
-            FBCRUD.getUserGameList(FBAuth.UID.toString())
-                .collect { CentralizedData.gameList.value = it.sortedByDescending { it.userScore }}
+            CentralizedData.gameList.value = FBCRUD.getUserGameList(FBAuth.UID.toString()).sortedByDescending { it.userScore }
+
         }
         //También la de planning por los mismos motivos
         viewModelScope.launch {
-            /*
-            FBCRUD.getUserGamePlanningList(FBAuth.UID.toString())
-                .collect { CentralizedData.planningList.value = it.sortedBy { it.name }}
-
-             */
             CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(FBAuth.UID.toString()).sortedBy { it.name }
         }
 

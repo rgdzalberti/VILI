@@ -57,7 +57,7 @@ class FBCRUD {
 
         }
 
-        fun getUserGameList(uid:String): Flow<List<UserGame>> = flow {
+        suspend fun getUserGameList(uid:String): List<UserGame> = suspendCoroutine{ continuation->
 
             Log.i("wawa","$uid")
             val db = Firebase.firestore
@@ -118,13 +118,14 @@ class FBCRUD {
                                     )
                                 )
                             }
+                            continuation.resume(gameList)
                         } else {
                             //El campo no existe, así que lo creo para la proxima vez
                             val emptyArray = mutableListOf<UserGame>()
                             reference.update(hashMapOf("userGameList" to emptyArray) as Map<String, Any>)
                         }
-                    }.await()
-                emit(gameList)
+                    }
+
             }
 
         }
