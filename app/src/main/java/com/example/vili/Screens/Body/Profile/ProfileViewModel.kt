@@ -47,16 +47,16 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
 
         //region Stats
         viewModelScope.launch {
-            FBCRUD.getUserGameList(profileID)
+            FBCRUD.getUserGameList()
                 .collect { playedGames = it.size }
         }
 
         viewModelScope.launch {
-            FBCRUD.getUserGamePlanningList(profileID)
+            FBCRUD.getUserGamePlanningList()
                 .collect { planningGames = it.size }
         }
-        Log.i("wawa",profileID)
-        init()
+
+
     }
 
     fun init() {
@@ -68,12 +68,12 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
 
         //region Stats
         viewModelScope.launch {
-            FBCRUD.getUserGameList(profileID)
+            FBCRUD.getUserGameList()
                 .collect { playedGames = it.size }
         }
 
         viewModelScope.launch {
-            FBCRUD.getUserGamePlanningList(profileID)
+            FBCRUD.getUserGamePlanningList()
                 .collect { planningGames = it.size }
         }
     }
@@ -122,8 +122,11 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
 
 
         //Primero las vacío para que no muestre los juegos anteriores por un momento si la conexión es lenta
+        /*
         CentralizedData.gameList.value = emptyList()
         CentralizedData.planningList.value = emptyList()
+
+         */
 
         /*
 

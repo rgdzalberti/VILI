@@ -76,6 +76,8 @@ fun Profile(
 
      */
 
+
+
     //Upper Bar Color
     systemBarColor(color = ObscureBlack)
     //Actualizo el icono del Bottombar
@@ -282,7 +284,7 @@ fun ProfileBody(
                 Modifier
                     .background(Color.Transparent)
                     .offset(y = (40).dp)) {
-                Text(modifier = Modifier.fillMaxWidth(), text = text, textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                Text(modifier = Modifier.fillMaxWidth(), text = "${FBAuth.getUserEmail()?.substringBefore("@")}", textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             }
             //endregion
         }

@@ -4,6 +4,7 @@ import FBStorage
 import android.util.Log
 import com.example.vili.Model.Querys.FBAuth
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -57,12 +58,11 @@ class FBCRUD {
 
         }
 
-        fun getUserGameList(uid: String): Flow<List<UserGame>> = callbackFlow {
+        fun getUserGameList(): Flow<List<UserGame>> = callbackFlow {
 
             val db = Firebase.firestore
-            val userUID = uid
+            val userUID = Firebase.auth.uid
 
-            if (!uid.isNullOrBlank()) {
                 val reference = db.collection("UserDATA").document(userUID.toString())
 
                 val gameList = mutableListOf<UserGame>()
@@ -125,18 +125,17 @@ class FBCRUD {
                         }
                         trySend(gameList)
 
-                    }
+
             }
             awaitClose { channel.close() }
         }
 
         //Obtener lista de juegos de usuario
-        fun getUserGamePlanningList(uid: String? = FBAuth.UID): Flow<List<Game>> = callbackFlow {
+        fun getUserGamePlanningList(): Flow<List<Game>> = callbackFlow {
 
             val db = Firebase.firestore
-            val userUID = uid
+            val userUID = Firebase.auth.uid
 
-            if (!uid.isNullOrBlank()) {
                 val reference = db.collection("UserDATA").document(userUID.toString())
 
                 val gameList = mutableListOf<Game>()
@@ -190,7 +189,7 @@ class FBCRUD {
                         }
                         trySend(gameList)
 
-                    }
+
             }
             awaitClose { channel.close() }
         }

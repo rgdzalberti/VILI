@@ -1,5 +1,6 @@
 package com.example.vili.Screens.Body.MyList
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -24,8 +25,9 @@ class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) 
     init {
 
 
+        if (CentralizedData.gameList.value.isEmpty())
             viewModelScope.launch {
-                FBCRUD.getUserGameList(Firebase.auth.uid.toString())
+                FBCRUD.getUserGameList()
                     .collect { CentralizedData.gameList.value = it }
             }
 
@@ -35,9 +37,9 @@ class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) 
 
     fun reloadList(){
         viewModelScope.launch {
-            FBCRUD.getUserGameList(Firebase.auth.uid.toString())
+            FBCRUD.getUserGameList()
                 .onCompletion { CentralizedData.tellGameListToReload(false) }
-                .collect { CentralizedData.gameList.value = it }
+                .collect { CentralizedData.gameList.value = it; Log.i("wawa",it.toString()) }
         }
 
         viewModelScope.launch {
