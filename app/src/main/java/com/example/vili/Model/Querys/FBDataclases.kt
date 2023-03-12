@@ -31,3 +31,8 @@ data class GameBanner(
     val imageURL : String = "",
     val gameID : String = "",
 ): java.io.Serializable
+
+data class UserProfile(
+    val name: String = "",
+    val imageURL: String = "",
+): java.io.Serializable

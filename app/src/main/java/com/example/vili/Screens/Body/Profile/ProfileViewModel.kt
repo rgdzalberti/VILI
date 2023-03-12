@@ -37,6 +37,10 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
     //endregion
 
     init {
+        //Uso una función init ya que en el composable actualizo primero el id así que el init ha de ir después
+    }
+
+    fun init(){
         viewModelScope.launch {
             updateImages()
         }
@@ -48,12 +52,15 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
         }
 
         viewModelScope.launch {
+            /*
             FBCRUD.getUserGamePlanningList(profileID)
                 .collect { planningGames = it.size }
-        }
-        //endregion
 
+             */
+            planningGames = FBCRUD.getUserGamePlanningList(profileID).size
+        }
     }
+
     //region Funciones para el Swipe Refresh
 
 
@@ -71,12 +78,12 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
     suspend fun updateImages(){
 
 
-        FBAuth.UID?.let {
+        profileID.let {
             val pfp = FBStorage.getPFPURL(it)
             if (!pfp.isBlank()) pfpURL = pfp; updatingImages++
         }
 
-        FBAuth.UID?.let {
+        profileID.let {
             val banner = FBStorage.getBannerURL(it){ url->
                 if (!url.isBlank()) bannerURL = url ; updatingImages++
             }
@@ -94,20 +101,25 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
     //region update Game List (Por si viaja a la lista del usuario)
     fun updateGameListValues(){
 
+
         //Primero las vacío para que no muestre los juegos anteriores por un momento si la conexión es lenta
         CentralizedData.gameList.value = emptyList()
         CentralizedData.planningList.value = emptyList()
 
         //Ahora las relleno
         viewModelScope.launch {
-            FBCRUD.getUserGameList()
+            FBCRUD.getUserGameList(profileID)
                 .collect { CentralizedData.gameList.value = it.sortedByDescending { it.userScore } }
 
-            viewModelScope.launch {
-                FBCRUD.getUserGamePlanningList()
+            viewModelScope.launch {/*
+                FBCRUD.getUserGamePlanningList(profileID)
                     .collect { CentralizedData.planningList.value = it.sortedBy { it.name }}
+                    */
+                CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(profileID).sortedBy { it.name }
             }
         }
+
+
 
 
     }

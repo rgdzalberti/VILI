@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import java.util.*
 import kotlin.coroutines.suspendCoroutine
+import kotlin.coroutines.resume
 
 
 class FBCRUD {
@@ -56,8 +57,9 @@ class FBCRUD {
 
         }
 
-        fun getUserGameList(uid: String? = FBAuth.UID): Flow<List<UserGame>> = callbackFlow {
+        fun getUserGameList(uid:String): Flow<List<UserGame>> = flow {
 
+            Log.i("wawa","$uid")
             val db = Firebase.firestore
             val userUID = uid
 
@@ -119,18 +121,16 @@ class FBCRUD {
                         } else {
                             //El campo no existe, así que lo creo para la proxima vez
                             val emptyArray = mutableListOf<UserGame>()
-                            //reference.set(hashMapOf("userGameList" to emptyArray))
                             reference.update(hashMapOf("userGameList" to emptyArray) as Map<String, Any>)
                         }
-                        trySend(gameList)
-
-                    }
+                    }.await()
+                emit(gameList)
             }
-            awaitClose { channel.close() }
+
         }
 
         //Obtener lista de juegos de usuario
-        fun getUserGamePlanningList(uid: String? = FBAuth.UID): Flow<List<Game>> = callbackFlow {
+        suspend fun getUserGamePlanningList(uid:String): List<Game> = suspendCoroutine{ continuation->
 
             val db = Firebase.firestore
             val userUID = uid
@@ -182,16 +182,17 @@ class FBCRUD {
                                     )
                                 )
                             }
+                            continuation.resume(gameList)
                         } else {
                             //El campo no existe, así que lo creo para la proxima vez
                             val emptyArray = mutableListOf<Game>()
                             reference.update(hashMapOf("userGamePlanningList" to emptyArray) as Map<String, Any>)
                         }
-                        trySend(gameList)
+
 
                     }
             }
-            awaitClose { channel.close() }
+
         }
 
         fun getGameBanners():Flow<List<GameBanner>> = callbackFlow{

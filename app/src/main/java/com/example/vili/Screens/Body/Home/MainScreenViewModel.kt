@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.example.vili.Common.Complex.BottomBarClass
 import com.example.vili.Common.Complex.BottomBarClass.Companion.turnBottomBar
+import com.example.vili.Model.Querys.FBAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,13 +56,17 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
 
         //Además inicializo la lista del jugador por si quiere ver sus estadisticas en el perfil
         viewModelScope.launch {
-            FBCRUD.getUserGameList()
+            FBCRUD.getUserGameList(FBAuth.UID.toString())
                 .collect { CentralizedData.gameList.value = it.sortedByDescending { it.userScore }}
         }
         //También la de planning por los mismos motivos
         viewModelScope.launch {
-            FBCRUD.getUserGamePlanningList()
+            /*
+            FBCRUD.getUserGamePlanningList(FBAuth.UID.toString())
                 .collect { CentralizedData.planningList.value = it.sortedBy { it.name }}
+
+             */
+            CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(FBAuth.UID.toString()).sortedBy { it.name }
         }
 
         //Ahora inicializo la lista de banners

@@ -5,6 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.example.vili.Model.Querys.FBAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
@@ -20,27 +21,41 @@ class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) 
 
     init {
 
-        if (CentralizedData.gameList.value.isEmpty()) {
-            viewModelScope.launch {
-                FBCRUD.getUserGameList()
-                    .collect { CentralizedData.gameList.value = it }
-            }
+
+        viewModelScope.launch {
+            FBCRUD.getUserGameList(CentralizedData.profileID.value)
+                .collect { CentralizedData.gameList.value = it }
         }
+
+        viewModelScope.launch {
+            CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(CentralizedData.profileID.value)
+        }
+            /*
+            FBCRUD.getUserGamePlanningList(CentralizedData.profileID.value)
+                .onCompletion { CentralizedData.tellGameListToReload(false) }
+                .collect { CentralizedData.planningList.value = it }
+        }
+
+             */
 
 
     }
 
     fun reloadList(){
         viewModelScope.launch {
-            FBCRUD.getUserGameList()
+            FBCRUD.getUserGameList(CentralizedData.profileID.value)
                 .onCompletion { CentralizedData.tellGameListToReload(false) }
                 .collect { CentralizedData.gameList.value = it }
         }
 
         viewModelScope.launch {
-            FBCRUD.getUserGamePlanningList()
+            /*
+            FBCRUD.getUserGamePlanningList(CentralizedData.profileID.value)
                 .onCompletion { CentralizedData.tellGameListToReload(false) }
                 .collect { CentralizedData.planningList.value = it }
+
+             */
+            CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(CentralizedData.profileID.value)
         }
 
     }
