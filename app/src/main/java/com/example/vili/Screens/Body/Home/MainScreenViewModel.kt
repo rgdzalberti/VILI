@@ -1,5 +1,6 @@
 package com.example.vili.Screens.Body.Home
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -56,17 +57,13 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
 
         //Además inicializo la lista del jugador por si quiere ver sus estadisticas en el perfil
         viewModelScope.launch {
-            FBCRUD.getUserGameList(FBAuth.UID.toString())
+            FBCRUD.getUserGameList()
                 .collect { CentralizedData.gameList.value = it.sortedByDescending { it.userScore }}
         }
         //También la de planning por los mismos motivos
         viewModelScope.launch {
-            /*
-            FBCRUD.getUserGamePlanningList(FBAuth.UID.toString())
+            FBCRUD.getUserGamePlanningList()
                 .collect { CentralizedData.planningList.value = it.sortedBy { it.name }}
-
-             */
-            CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(FBAuth.UID.toString()).sortedBy { it.name }
         }
 
         //Ahora inicializo la lista de banners

@@ -14,7 +14,7 @@ import java.lang.Exception
 class FBAuth {
     companion object {
 
-        val UID = Firebase.auth.uid
+        var UID = Firebase.auth.uid
 
         //region LOGIN
         fun onLogIn(email: String, password: String, context: Context, callback: (Boolean) -> Unit) {

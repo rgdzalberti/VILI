@@ -1,5 +1,6 @@
 package com.example.vili.Common.Composables
 
+import android.util.Log
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
@@ -29,17 +30,23 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.vili.R
 import com.example.vili.myApp.theme.ObscureBlack
+import com.google.accompanist.pager.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import viliApp.DeviceConfig
-import viliApp.Game
-import viliApp.LazyList
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import viliApp.*
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 
-
+//region SearchMenu
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: List<Game>, nav: NavController) {
+
+    val pagerState = rememberPagerState()
+    val scope = rememberCoroutineScope()
 
     Box() {
 
@@ -58,8 +65,7 @@ fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: Li
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.15f)
-                    .clip(RoundedCornerShape(bottomEnd = 15.dp, bottomStart = 15.dp))
+                    .fillMaxHeight(0.10f)
                     .background(ObscureBlack), contentAlignment = Alignment.Center
             ) {
 
@@ -88,20 +94,94 @@ fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: Li
                             )
                         },
                         onValueChange = onValueChange,
-                        label = { Text(text = "Introduce un título", color = Color.White) },
+                        label = { Text(text = "Introduce el término", color = Color.White) },
                     )
                 }
 
 
             }
 
+            Row(
+                Modifier
+                    .background(ObscureBlack)
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.05f)) {
+                TabDATASearch(tabIndex = TabDataSearch.tabIndex.value, updateTabIndex = TabDataSearch::updateTabData, pagerState = pagerState, scope = rememberCoroutineScope())
+            }
+
             //RESULTADOS
-            LazyList(nav, searchText, gameList = gameList, isGameListB = true)
+            HorizontalPager(count = 2,state = pagerState) { page ->
+
+                when(page){
+                    0 -> {TabDataSearch.updateTabData(0); LazyList(nav, searchText, gameList = gameList, isGameListB = true)  }
+                    1 -> {
+                        TabDataSearch.updateTabData(1);
+
+                        //Si no se ha hecho la query de rellenar la lista de usuarios se hace ahora
+                        if (CentralizedData.userProfileList.value.isEmpty()) {
+
+                            LaunchedEffect(Unit) {
+                                FBCRUD.getUsersProfiles().collect{CentralizedData.userProfileList.value = it.sortedBy { it.name }}
+                            }
+
+
+                        }
+
+                        UserLazyList(nav,searchText,CentralizedData.userProfileList.value)
+                    }
+                }
+
+            }
+
 
 
         }
     }
 }
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun TabDATASearch(tabIndex: Int, updateTabIndex:(Int) -> Unit, pagerState: PagerState, scope: CoroutineScope){
+
+    val tabData = listOf(
+        "Juegos",
+        "Usuarios",)
+
+    TabRow(
+        // Our selected tab is our current page
+        selectedTabIndex = pagerState.currentPage,
+        // Override the indicator, using the provided pagerTabIndicatorOffset modifier
+        indicator = { tabPositions ->
+            TabRowDefaults.Indicator(
+                modifier = Modifier.pagerTabIndicatorOffset(pagerState, tabPositions)
+            )
+        }
+    ) {
+        // Add tabs for all of our pages
+        tabData.forEachIndexed { index, title ->
+            Tab(
+                modifier = Modifier.background(Color.Black),
+                text = { Text(title) },
+                selected = pagerState.currentPage == index,
+                onClick = {
+                    scope.launch {
+                        pagerState.scrollToPage(index)}
+                },
+            )
+        }
+    }
+}
+
+class TabDataSearch{
+    companion object{
+        var tabIndex = mutableStateOf(0)
+
+        fun updateTabData(newValue: Int){
+            tabIndex.value = newValue
+        }
+    }
+}
+
+//endregion
 
 @Composable
 fun SettingsMenu(logOut: () -> Unit, switchSettings: () -> Unit) {
@@ -154,7 +234,7 @@ fun SettingsMenu(logOut: () -> Unit, switchSettings: () -> Unit) {
                 change.consume()
                 if (dragAmount.x < 0) {
                     offsetX += dragAmount.x
-                } else if (dragAmount.x>0 && offsetX<0){
+                } else if (dragAmount.x > 0 && offsetX < 0) {
                     offsetX += dragAmount.x
                 }
 

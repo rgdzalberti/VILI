@@ -70,11 +70,11 @@ class FBStorage{
 
                 ref.downloadUrl
                     .addOnSuccessListener {url->
-                        if (url.toString().isBlank()) continuation.resume("https://pbs.twimg.com/media/FprEeyJXwAI-hre.jpg") else continuation.resume(url.toString())
+                        continuation.resume(url.toString())
                     }
                     .addOnFailureListener{exception->
-                        continuation.resume("")
-                        Log.e("FBStorage",exception.toString() + " b")
+                        //No ha encontrado la imagen, así que se pone la por defecto
+                        continuation.resume("https://pbs.twimg.com/media/FprEeyJXwAI-hre.jpg")
                     }
 
             } else Log.e("FBStorage", "No hay sesión iniciada. Abortando get de URL.")
@@ -93,11 +93,11 @@ class FBStorage{
 
                 ref.downloadUrl
                     .addOnSuccessListener {url->
-                        if (url.toString().isBlank()) callback("https://wallpaperaccess.com/full/2635957.jpg") else callback(url.toString())
+                        callback(url.toString())
                     }
                     .addOnFailureListener{exception->
-                        callback("")
-                        Log.e("FBStorage",exception.toString() + " a")
+                        //No ha encontrado la imagen, así que se pone la por defecto
+                        callback("https://wallpaperaccess.com/full/2635957.jpg")
                     }
 
             } else Log.e("FBStorage", "No hay sesión iniciada. Abortando get de URL.")

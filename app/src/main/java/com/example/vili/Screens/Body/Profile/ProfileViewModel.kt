@@ -40,7 +40,7 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
         //Uso una función init ya que en el composable actualizo primero el id así que el init ha de ir después
     }
 
-    fun init(){
+    fun init() {
         viewModelScope.launch {
             updateImages()
         }
@@ -52,14 +52,12 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
         }
 
         viewModelScope.launch {
-            /*
             FBCRUD.getUserGamePlanningList(profileID)
                 .collect { planningGames = it.size }
-
-             */
-            planningGames = FBCRUD.getUserGamePlanningList(profileID).size
         }
     }
+        //endregion
+
 
     //region Funciones para el Swipe Refresh
 
@@ -106,20 +104,19 @@ class ProfileViewModel @Inject constructor(savedStateHandle: SavedStateHandle) :
         CentralizedData.gameList.value = emptyList()
         CentralizedData.planningList.value = emptyList()
 
+        /*
+
         //Ahora las relleno
         viewModelScope.launch {
-            FBCRUD.getUserGameList(profileID)
-                .collect { CentralizedData.gameList.value = it.sortedByDescending { it.userScore } }
-
-            viewModelScope.launch {/*
-                FBCRUD.getUserGamePlanningList(profileID)
-                    .collect { CentralizedData.planningList.value = it.sortedBy { it.name }}
-                    */
-                CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(profileID).sortedBy { it.name }
-            }
+            CentralizedData.gameList.value = FBCRUD.getUserGameList(profileID).sortedByDescending { it.userScore }
         }
 
+            viewModelScope.launch {
 
+                CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(profileID).sortedBy { it.name }
+            }
+
+         */
 
 
     }

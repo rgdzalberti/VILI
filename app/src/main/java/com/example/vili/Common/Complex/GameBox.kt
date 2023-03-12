@@ -32,7 +32,7 @@ fun GameBox(
     var rating = ""
     repeat(Rating) { rating += "★" }
 
-    var modTitle = if (titulo.length >= 17) {"${titulo.subSequence(0,17)}..."} else titulo
+    var modTitle = if (titulo.length >= 17) {"${titulo.subSequence(0,15)}..."} else titulo
 
     Box(
         modifier = Modifier

@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.vili.Screens.Body.Home.HomeScreen
 import com.example.vili.Screens.Body.MyList.GameList
+import com.example.vili.Screens.Body.MyList.GameListBody
 import com.example.vili.Screens.Body.Profile.CurrentImage
 import com.example.vili.Screens.Body.Profile.Profile
 import com.example.vili.Screens.Body.Profile.EditImage
@@ -32,10 +33,13 @@ fun NavigationHost (navController: NavHostController,startDestination: String){
             GameDetails(navController)
         }
         composable(route = Destinations.Profile.ruta){
-            Profile(nav=navController)
+            Profile(nav=navController, profileID = CentralizedData.profileID.value)
         }
         composable(route = Destinations.EditImage.ruta){
             EditImage(nav=navController, imageURL = CurrentImage.imageURL.value, editingPFP = CurrentImage.editingPFP.value)
+        }
+        composable(route = Destinations.UserList.ruta){
+            GameListBody(navController)
         }
 
 

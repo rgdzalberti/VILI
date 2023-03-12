@@ -57,9 +57,8 @@ class FBCRUD {
 
         }
 
-        fun getUserGameList(uid:String): Flow<List<UserGame>> = flow {
+        fun getUserGameList(uid: String? = FBAuth.UID): Flow<List<UserGame>> = callbackFlow {
 
-            Log.i("wawa","$uid")
             val db = Firebase.firestore
             val userUID = uid
 
@@ -121,16 +120,18 @@ class FBCRUD {
                         } else {
                             //El campo no existe, así que lo creo para la proxima vez
                             val emptyArray = mutableListOf<UserGame>()
+                            //reference.set(hashMapOf("userGameList" to emptyArray))
                             reference.update(hashMapOf("userGameList" to emptyArray) as Map<String, Any>)
                         }
-                    }.await()
-                emit(gameList)
-            }
+                        trySend(gameList)
 
+                    }
+            }
+            awaitClose { channel.close() }
         }
 
         //Obtener lista de juegos de usuario
-        suspend fun getUserGamePlanningList(uid:String): List<Game> = suspendCoroutine{ continuation->
+        fun getUserGamePlanningList(uid: String? = FBAuth.UID): Flow<List<Game>> = callbackFlow {
 
             val db = Firebase.firestore
             val userUID = uid
@@ -182,17 +183,16 @@ class FBCRUD {
                                     )
                                 )
                             }
-                            continuation.resume(gameList)
                         } else {
                             //El campo no existe, así que lo creo para la proxima vez
                             val emptyArray = mutableListOf<Game>()
                             reference.update(hashMapOf("userGamePlanningList" to emptyArray) as Map<String, Any>)
                         }
-
+                        trySend(gameList)
 
                     }
             }
-
+            awaitClose { channel.close() }
         }
 
         fun getGameBanners():Flow<List<GameBanner>> = callbackFlow{

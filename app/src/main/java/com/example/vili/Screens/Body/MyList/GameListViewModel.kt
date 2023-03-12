@@ -21,41 +21,27 @@ class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) 
 
     init {
 
-
-        viewModelScope.launch {
-            FBCRUD.getUserGameList(CentralizedData.profileID.value)
-                .collect { CentralizedData.gameList.value = it }
+        if (CentralizedData.gameList.value.isEmpty()) {
+            viewModelScope.launch {
+                FBCRUD.getUserGameList()
+                    .collect { CentralizedData.gameList.value = it }
+            }
         }
-
-        viewModelScope.launch {
-            CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(CentralizedData.profileID.value)
-        }
-            /*
-            FBCRUD.getUserGamePlanningList(CentralizedData.profileID.value)
-                .onCompletion { CentralizedData.tellGameListToReload(false) }
-                .collect { CentralizedData.planningList.value = it }
-        }
-
-             */
 
 
     }
 
     fun reloadList(){
         viewModelScope.launch {
-            FBCRUD.getUserGameList(CentralizedData.profileID.value)
+            FBCRUD.getUserGameList()
                 .onCompletion { CentralizedData.tellGameListToReload(false) }
                 .collect { CentralizedData.gameList.value = it }
         }
 
         viewModelScope.launch {
-            /*
-            FBCRUD.getUserGamePlanningList(CentralizedData.profileID.value)
+            FBCRUD.getUserGamePlanningList()
                 .onCompletion { CentralizedData.tellGameListToReload(false) }
                 .collect { CentralizedData.planningList.value = it }
-
-             */
-            CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(CentralizedData.profileID.value)
         }
 
     }

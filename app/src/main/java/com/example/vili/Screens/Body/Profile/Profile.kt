@@ -55,18 +55,11 @@ import viliApp.DeviceConfig
 import viliApp.NavigationFunctions
 import viliApp.systemBarColor
 
-@Composable
-@Preview
-fun PreviewProfile() {
-
-    Profile(nav = rememberNavController())
-}
-
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun Profile(
-    profileID: String? = Firebase.auth.uid,
+    profileID: String,
     nav: NavController,
     MainScreenViewModel: MainScreenViewModel = hiltViewModel(), viewModel: ProfileViewModel = hiltViewModel()
 ) {
@@ -75,8 +68,9 @@ fun Profile(
     val pullRefreshState = rememberPullRefreshState(viewModel.refreshing, { viewModel.refresh() })
 
     //Guardo el UID nada mas entrar por si viajo a una lista
-    if (profileID != null) {
+    if (profileID != viewModel.profileID) {
         viewModel.setProfileUID(profileID)
+        viewModel.init()
     }
 
     //Upper Bar Color
@@ -92,6 +86,11 @@ fun Profile(
                 .verticalScroll(rememberScrollState())
 
         ) {
+            TopBar(
+                switchSettings = { MainScreenViewModel.switchSettings() },
+                switchSearch = { MainScreenViewModel.switchSearch() },
+                nav = nav
+            )
 
             //Este es el cuerpo de la pantalla
             ProfileBody(nav = nav, profileID = profileID)
@@ -150,9 +149,15 @@ fun Profile(
 
             PullRefreshIndicator(viewModel.refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
 
-
         }
     }
+
+    //region Is Refreshing?
+    if (viewModel.updatingImages==2){
+        viewModel.updatingImages = 0
+        viewModel.refreshing = false
+    }
+    //endregion
 
     //region NAVIGATE
     if (NavigationFunctions.changeScreen.value) {
@@ -172,7 +177,8 @@ fun Profile(
                 } else {
                     //Si no, le muestro la lista, actualizando primero los datos
                     viewModel.updateGameListValues()
-                    GameListBody(navController = nav)
+                    nav.navigate(route = Destinations.UserList.ruta) //TODO
+
                 }
             }
         }
@@ -205,11 +211,7 @@ fun ProfileBody(
     ) {
 
 
-        TopBar(
-            switchSettings = { MainScreenViewModel.switchSettings() },
-            switchSearch = { MainScreenViewModel.switchSearch() },
-            nav = nav
-        )
+
 
         //region Banner
         Row(
@@ -224,9 +226,11 @@ fun ProfileBody(
                 modifier = Modifier
                     .fillMaxSize()
                     .clickable {
-                        CurrentImage.imageURL.value = viewModel.bannerURL
-                        CurrentImage.editingPFP.value = false
-                        nav.navigate(route = Destinations.EditImage.ruta)
+                        if (FBAuth.UID.toString()==profileID) {
+                            CurrentImage.imageURL.value = viewModel.bannerURL
+                            CurrentImage.editingPFP.value = false
+                            nav.navigate(route = Destinations.EditImage.ruta)
+                        }
                     },
                 contentScale = ContentScale.Crop
             )
@@ -255,9 +259,11 @@ fun ProfileBody(
                         .clip(RoundedCornerShape(16.dp))
                         .fillMaxSize()
                         .clickable {
-                            CurrentImage.imageURL.value = viewModel.pfpURL
-                            CurrentImage.editingPFP.value = true
-                            nav.navigate(route = Destinations.EditImage.ruta)
+                            if (FBAuth.UID.toString()==profileID) {
+                                CurrentImage.imageURL.value = viewModel.pfpURL
+                                CurrentImage.editingPFP.value = true
+                                nav.navigate(route = Destinations.EditImage.ruta)
+                            }
                         },
                     contentScale = ContentScale.Crop
                 )
@@ -265,11 +271,15 @@ fun ProfileBody(
             //endregion
 
             //region Nombre
+            val text = when{
+                FBAuth.UID == profileID -> {"${FBAuth.getUserEmail()?.substringBefore("@")}"}
+                else -> {"${profileID.toString().take(6)}"}
+            }
             Row(
                 Modifier
                     .background(Color.Transparent)
                     .offset(y = (40).dp)) {
-                Text(modifier = Modifier.fillMaxWidth(), text = "${FBAuth.getUserEmail()?.substringBefore("@")}", textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                Text(modifier = Modifier.fillMaxWidth(), text = text, textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             }
             //endregion
         }
@@ -290,7 +300,7 @@ fun ProfileBody(
                 contentAlignment = Alignment.Center
                     ) {
                 Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "0", color = Color.White, textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold) //TODO 
+                    Text(text = viewModel.playedGames.toString(), color = Color.White, textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold)
                     Text(text = "Juegos Jugados", color = Color.White, textAlign = TextAlign.Center, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 }
             }
@@ -304,36 +314,16 @@ fun ProfileBody(
                 contentAlignment = Alignment.Center
             ) {
                 Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "0", color = Color.White, textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold)//TODO 
+                    Text(text = viewModel.planningGames.toString(), color = Color.White, textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold)
                     Text(text = "Juegos Planning", color = Color.White, textAlign = TextAlign.Center, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
         //endregion
 
-        //region navigate List
-        Column(Modifier.padding(5.dp)) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.25f)
-                    .background(LightBlack2, RoundedCornerShape(10.dp))
-                    .padding(5.dp)
-                    .clickable { NavigationFunctions.changeScreen(4) },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "VISITAR  LISTA",
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-        //endregion
+
 
     }
 
 }
+

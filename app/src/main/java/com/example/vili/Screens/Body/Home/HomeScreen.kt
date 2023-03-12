@@ -16,6 +16,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +36,8 @@ import com.example.vili.myApp.theme.LightBlack
 import com.example.vili.myApp.theme.ObscureBlack
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import viliApp.*
 import viliApp.NavigationFunctions.Companion.NavigatePopLogOut
 
@@ -48,6 +51,9 @@ fun PreviewTTT(){
 @Composable
 fun HomeScreen(nav: NavController, viewModel: MainScreenViewModel = hiltViewModel()){
 
+    LaunchedEffect(Unit){
+        CentralizedData.profileID.value = Firebase.auth.uid.toString()
+    }
     //Obtengo la información del dispositivo (DPI, Medidas)
     getDeviceConfig()
     //Modifico la barra superior
