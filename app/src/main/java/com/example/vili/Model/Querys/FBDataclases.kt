@@ -1,6 +1,5 @@
 package viliApp
 
-import kotlinx.coroutines.flow.Flow
 import java.util.Date
 
 data class Game(
@@ -31,9 +30,4 @@ data class GameBanner(
     val name: String = "",
     val imageURL : String = "",
     val gameID : String = "",
-): java.io.Serializable
-
-data class UserProfile(
-    val name: String = "",
-    val imageURL: String = "",
 ): java.io.Serializable

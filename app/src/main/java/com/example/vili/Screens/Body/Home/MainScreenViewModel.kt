@@ -1,6 +1,5 @@
 package com.example.vili.Screens.Body.Home
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -8,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.example.vili.Common.Complex.BottomBarClass
 import com.example.vili.Common.Complex.BottomBarClass.Companion.turnBottomBar
-import com.example.vili.Model.Querys.FBAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,9 +41,6 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
 
     init {
 
-        Log.i("wawa",Firebase.auth.uid.toString())
-        Log.i("wawa",FBAuth.UID.toString())
-
         //Si no existe UserDATA para este user lo creo
         viewModelScope.launch {
             FBCRUD.createUserData()
@@ -60,12 +55,13 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
 
         //Además inicializo la lista del jugador por si quiere ver sus estadisticas en el perfil
         viewModelScope.launch {
-            CentralizedData.gameList.value = FBCRUD.getUserGameList(FBAuth.UID.toString()).sortedByDescending { it.userScore }
-
+            FBCRUD.getUserGameList()
+                .collect { CentralizedData.gameList.value = it.sortedByDescending { it.userScore } }
         }
         //También la de planning por los mismos motivos
         viewModelScope.launch {
-            CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(FBAuth.UID.toString()).sortedBy { it.name }
+            FBCRUD.getUserGamePlanningList()
+                .collect { CentralizedData.planningList.value = it.sortedBy { it.name }}
         }
 
         //Ahora inicializo la lista de banners
@@ -100,7 +96,6 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
     //endregion
 
     fun logOut(){
-        CentralizedData.profileID.value = ""
         Firebase.auth.signOut()
         BottomBarClass.turnBottomBar()
         logOutnPop = !logOutnPop

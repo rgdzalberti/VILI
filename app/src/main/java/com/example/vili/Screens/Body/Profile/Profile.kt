@@ -152,13 +152,6 @@ fun Profile(
         }
     }
 
-    //region Is Refreshing?
-    if (viewModel.updatingImages==2){
-        viewModel.updatingImages = 0
-        viewModel.refreshing = false
-    }
-    //endregion
-
     //region NAVIGATE
     if (NavigationFunctions.changeScreen.value) {
         NavigationFunctions.changeScreen(-1)
@@ -300,7 +293,7 @@ fun ProfileBody(
                 contentAlignment = Alignment.Center
                     ) {
                 Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = viewModel.playedGames.toString(), color = Color.White, textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "0", color = Color.White, textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold) //TODO 
                     Text(text = "Juegos Jugados", color = Color.White, textAlign = TextAlign.Center, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 }
             }
@@ -314,7 +307,7 @@ fun ProfileBody(
                 contentAlignment = Alignment.Center
             ) {
                 Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = viewModel.planningGames.toString(), color = Color.White, textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "0", color = Color.White, textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold)//TODO 
                     Text(text = "Juegos Planning", color = Color.White, textAlign = TextAlign.Center, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 }
             }

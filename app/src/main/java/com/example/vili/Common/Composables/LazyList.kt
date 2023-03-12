@@ -1,28 +1,16 @@
 package viliApp
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Card
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Device
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
 import com.example.vili.myApp.theme.LightBlack
-import com.example.vili.myApp.theme.LightBlack2
 
 @Composable
 fun LazyList(nav: NavController, searchText: String = "", gameList: List<Game> = emptyList(), userGameList: List<UserGame> = emptyList(), isGameListB: Boolean = false, isUserGameListB: Boolean = false){
@@ -34,7 +22,7 @@ fun LazyList(nav: NavController, searchText: String = "", gameList: List<Game> =
         .padding(top = 8.dp)) {
 
         //Primero hago una lista filtrando el término de búsqueda (Para GameList)
-        var gameListFiltered = filterByTextGM(gameList,searchText)
+        var gameListFiltered = filterByText(gameList,searchText)
 
         var repeatTimes =
             when{
@@ -149,7 +137,7 @@ fun LazyList(nav: NavController, searchText: String = "", gameList: List<Game> =
 }
 
 @Composable
-fun filterByTextGM(gameList: List<Game>, searchText: String): List<Game>{
+fun filterByText(gameList: List<Game>, searchText: String): List<Game>{
 
     var gameListFiltered = mutableListOf<Game>()
 
@@ -164,61 +152,4 @@ fun filterByTextGM(gameList: List<Game>, searchText: String): List<Game>{
     }
 
     return gameListFiltered
-}
-
-fun <T: Any> filterByText(filterText: String, genericList: List<T>, selector: (T) -> String): List<T> {
-    return genericList.filter { selector(it).contains(filterText, ignoreCase = true) }
-        .sortedWith(compareBy(selector))
-}
-
-@Composable
-fun UserLazyList(nav: NavController, searchText: String, userProfileList: List<UserProfile>) {
-
-    val filteredList = filterByText(searchText, userProfileList) { it.name }
-
-    LazyVerticalGrid(modifier = Modifier.fillMaxSize(), columns = GridCells.Fixed(2)) {
-        items(filteredList.size) { item ->
-            Surface(
-                modifier = Modifier
-                    .height(DeviceConfig.heightPercentage(30))
-                    .padding(10.dp),
-                elevation = 5.dp,
-            ) {
-
-                UserBox(nav,url = filteredList[item].imageURL, name = filteredList[item].name.take(6), id = filteredList[item].name)
-
-            }
-        }
-    }
-}
-
-@Composable
-fun UserBox(nav:NavController,url: String, name: String, id:String) {
-    Box(Modifier.fillMaxSize().clickable { CentralizedData.profileID.value = id; nav.navigate(route = Destinations.Profile.ruta) }) {
-            Image(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(LightBlack),
-                painter = rememberAsyncImagePainter(model = url),
-                contentDescription = "User PFP",
-                contentScale = ContentScale.FillBounds
-            )
-
-
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .background(Color(0x860A0A0A))
-                    .align(Alignment.BottomStart)
-            ) {
-                Text(
-                    modifier = Modifier.padding(5.dp),
-                    text = name,
-                    maxLines = 1,
-                    color = Color.White
-                )
-            }
-
-    }
 }
