@@ -1,15 +1,21 @@
 package viliApp
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.Card
 import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.vili.myApp.theme.LightBlack
 
 @Composable
@@ -22,7 +28,7 @@ fun LazyList(nav: NavController, searchText: String = "", gameList: List<Game> =
         .padding(top = 8.dp)) {
 
         //Primero hago una lista filtrando el término de búsqueda (Para GameList)
-        var gameListFiltered = filterByText(gameList,searchText)
+        var gameListFiltered = filterByTextGM(gameList,searchText)
 
         var repeatTimes =
             when{
@@ -137,7 +143,7 @@ fun LazyList(nav: NavController, searchText: String = "", gameList: List<Game> =
 }
 
 @Composable
-fun filterByText(gameList: List<Game>, searchText: String): List<Game>{
+fun filterByTextGM(gameList: List<Game>, searchText: String): List<Game>{
 
     var gameListFiltered = mutableListOf<Game>()
 
@@ -152,4 +158,59 @@ fun filterByText(gameList: List<Game>, searchText: String): List<Game>{
     }
 
     return gameListFiltered
+}
+
+fun <T: Any> filterByText(filterText: String, genericList: List<T>, selector: (T) -> String): List<T> {
+    return genericList.filter { selector(it).contains(filterText, ignoreCase = true) }
+        .sortedWith(compareBy(selector))
+}
+
+@Composable
+fun UserLazyList(nav:NavController,searchText:String,userProfileList: List<UserProfile>){
+
+    val filteredList = filterByText(searchText,userProfileList) {it.name}
+
+        LazyColumn(Modifier.fillMaxSize()) {
+
+            itemsIndexed(filteredList.chunked(2)) { index, pair ->
+                Row(
+                    Modifier
+                        .padding(5.dp)
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                ) {
+                    pair.forEach {
+                        //userProfile-> Text(text = userProfile.name)
+
+                        Box(
+                            Modifier
+                                .weight(1f)
+                                .background(Color.Black)
+                        ) {
+                            Image(
+                                modifier = Modifier.fillMaxSize(),
+                                painter = rememberAsyncImagePainter(it.imageURL),
+                                contentDescription = "Image"
+                            )
+                        }
+
+                        Box(
+                            Modifier
+                                .weight(1f)
+                                .background(Color.Black)
+                        ) {
+                            Image(
+                                modifier = Modifier.fillMaxSize(),
+                                painter = rememberAsyncImagePainter(it.imageURL),
+                                contentDescription = "Image"
+                            )
+                        }
+
+                    } //TODO TERMINAR AÑADIR CARDS
+                }
+            }
+
+        }
+
+
 }

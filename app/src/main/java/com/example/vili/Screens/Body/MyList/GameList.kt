@@ -43,6 +43,12 @@ fun GameList(navController: NavController, viewModel: GameListViewModel = hiltVi
         GameListBody(navController = navController)
     }
 
+    //Icono arriba izquierda popear pantalla
+    if (viewModel.popBack){
+        BottomBarClass.updateIndex(1)
+        viewModel.popBack()
+        navController.popBackStack()
+    }
     //PopStackBack con OS
     BackPressHandler(onBackPressed = { navController.popBackStack()  })
 
@@ -63,13 +69,6 @@ fun GameList(navController: NavController, viewModel: GameListViewModel = hiltVi
 fun GameListBody(navController:NavController, viewModel: GameListViewModel = hiltViewModel(), MainScreenViewModel: MainScreenViewModel = hiltViewModel()){
     systemBarColor(color = Color.Black)
     getDeviceConfig()
-
-    //Icono arriba izquierda popear pantalla
-    if (viewModel.popBack){
-        BottomBarClass.updateIndex(1)
-        viewModel.popBack()
-        navController.popBackStack()
-    }
 
     //No se puede poner en el viewmodel. Utilizo esto para controlar la pestaña y su animación
     val pagerState = rememberPagerState()

@@ -5,7 +5,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
-import com.example.vili.Model.Querys.FBAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
@@ -21,29 +20,28 @@ class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) 
 
     init {
 
-        viewModelScope.launch {
-            CentralizedData.gameList.value = FBCRUD.getUserGameList(CentralizedData.profileID.value)
-
+        if (CentralizedData.gameList.value.isEmpty()) {
+            viewModelScope.launch {
+                FBCRUD.getUserGameList()
+                    .collect { CentralizedData.gameList.value = it }
+            }
         }
 
-        viewModelScope.launch {
-            CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(CentralizedData.profileID.value)
-        }
 
     }
 
     fun reloadList(){
-
         viewModelScope.launch {
-            CentralizedData.gameList.value = FBCRUD.getUserGameList(CentralizedData.profileID.value)
+            FBCRUD.getUserGameList()
+                .onCompletion { CentralizedData.tellGameListToReload(false) }
+                .collect { CentralizedData.gameList.value = it }
         }
 
         viewModelScope.launch {
-
-            CentralizedData.planningList.value = FBCRUD.getUserGamePlanningList(CentralizedData.profileID.value)
+            FBCRUD.getUserGamePlanningList()
+                .onCompletion { CentralizedData.tellGameListToReload(false) }
+                .collect { CentralizedData.planningList.value = it }
         }
-
-
 
     }
 

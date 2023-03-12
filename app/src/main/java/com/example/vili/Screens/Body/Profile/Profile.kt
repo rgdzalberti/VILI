@@ -55,11 +55,18 @@ import viliApp.DeviceConfig
 import viliApp.NavigationFunctions
 import viliApp.systemBarColor
 
+@Composable
+@Preview
+fun PreviewProfile() {
+
+    Profile(nav = rememberNavController())
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun Profile(
-    profileID: String,
+    profileID: String? = Firebase.auth.uid,
     nav: NavController,
     MainScreenViewModel: MainScreenViewModel = hiltViewModel(), viewModel: ProfileViewModel = hiltViewModel()
 ) {
@@ -68,9 +75,8 @@ fun Profile(
     val pullRefreshState = rememberPullRefreshState(viewModel.refreshing, { viewModel.refresh() })
 
     //Guardo el UID nada mas entrar por si viajo a una lista
-    if (viewModel.profileID != profileID) {
+    if (profileID != null) {
         viewModel.setProfileUID(profileID)
-        viewModel.init()
     }
 
     //Upper Bar Color
@@ -86,11 +92,6 @@ fun Profile(
                 .verticalScroll(rememberScrollState())
 
         ) {
-            TopBar(
-                switchSettings = { MainScreenViewModel.switchSettings() },
-                switchSearch = { MainScreenViewModel.switchSearch() },
-                nav = nav
-            )
 
             //Este es el cuerpo de la pantalla
             ProfileBody(nav = nav, profileID = profileID)
@@ -149,6 +150,7 @@ fun Profile(
 
             PullRefreshIndicator(viewModel.refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
 
+
         }
     }
 
@@ -170,8 +172,7 @@ fun Profile(
                 } else {
                     //Si no, le muestro la lista, actualizando primero los datos
                     viewModel.updateGameListValues()
-                    nav.navigate(route = Destinations.UserList.ruta) //TODO
-
+                    GameListBody(navController = nav)
                 }
             }
         }
@@ -204,7 +205,11 @@ fun ProfileBody(
     ) {
 
 
-
+        TopBar(
+            switchSettings = { MainScreenViewModel.switchSettings() },
+            switchSearch = { MainScreenViewModel.switchSearch() },
+            nav = nav
+        )
 
         //region Banner
         Row(
@@ -219,11 +224,9 @@ fun ProfileBody(
                 modifier = Modifier
                     .fillMaxSize()
                     .clickable {
-                        if (FBAuth.UID.toString()==profileID) {
-                            CurrentImage.imageURL.value = viewModel.bannerURL
-                            CurrentImage.editingPFP.value = false
-                            nav.navigate(route = Destinations.EditImage.ruta)
-                        }
+                        CurrentImage.imageURL.value = viewModel.bannerURL
+                        CurrentImage.editingPFP.value = false
+                        nav.navigate(route = Destinations.EditImage.ruta)
                     },
                 contentScale = ContentScale.Crop
             )
@@ -252,11 +255,9 @@ fun ProfileBody(
                         .clip(RoundedCornerShape(16.dp))
                         .fillMaxSize()
                         .clickable {
-                            if (FBAuth.UID.toString()==profileID) {
-                                CurrentImage.imageURL.value = viewModel.pfpURL
-                                CurrentImage.editingPFP.value = true
-                                nav.navigate(route = Destinations.EditImage.ruta)
-                            }
+                            CurrentImage.imageURL.value = viewModel.pfpURL
+                            CurrentImage.editingPFP.value = true
+                            nav.navigate(route = Destinations.EditImage.ruta)
                         },
                     contentScale = ContentScale.Crop
                 )
@@ -264,15 +265,11 @@ fun ProfileBody(
             //endregion
 
             //region Nombre
-            val text = when{
-                FBAuth.UID == profileID -> {"${FBAuth.getUserEmail()?.substringBefore("@")}"}
-                else -> {"${profileID.toString().take(6)}"}
-            }
             Row(
                 Modifier
                     .background(Color.Transparent)
                     .offset(y = (40).dp)) {
-                Text(modifier = Modifier.fillMaxWidth(), text = text, textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                Text(modifier = Modifier.fillMaxWidth(), text = "${FBAuth.getUserEmail()?.substringBefore("@")}", textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             }
             //endregion
         }
@@ -340,4 +337,3 @@ fun ProfileBody(
     }
 
 }
-

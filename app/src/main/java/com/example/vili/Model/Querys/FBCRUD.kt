@@ -1,16 +1,21 @@
 package viliApp
 
+import FBStorage
+import android.util.Log
 import com.example.vili.Model.Querys.FBAuth
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import java.util.*
+import kotlin.coroutines.suspendCoroutine
 
 
 class FBCRUD {
@@ -51,92 +56,141 @@ class FBCRUD {
 
         }
 
-        fun getUserGameList(uid: String? = FBAuth.UID): Flow<List<UserGame>> = callbackFlow{
+        fun getUserGameList(uid: String? = FBAuth.UID): Flow<List<UserGame>> = callbackFlow {
 
             val db = Firebase.firestore
             val userUID = uid
-            val reference = db.collection("UserDATA").document(userUID.toString())
 
-            val gameList = mutableListOf<UserGame>()
+            if (!uid.isNullOrBlank()) {
+                val reference = db.collection("UserDATA").document(userUID.toString())
 
-            reference.get()
-                .addOnSuccessListener { document ->
+                val gameList = mutableListOf<UserGame>()
 
-                    if (document.get("userGameList") != null)
-                    {
-                        //Como el campo existe, saco los datos
-                        val gameEntry = document.get("userGameList") as List<*>
+                reference.get()
+                    .addOnSuccessListener { document ->
 
-                        gameEntry.forEach {
+                        if (document.get("userGameList") != null) {
+                            //Como el campo existe, saco los datos
+                            val gameEntry = document.get("userGameList") as List<*>
 
-                            val text = it.toString()
-                            var userComment = text.substringAfter("userComment=["); userComment = userComment.substringBefore("]")
-                            var developers = text.substringAfter("developers=["); developers = developers.substringBefore("]")
-                            var releaseDate = text.substringAfter("releaseDate=["); releaseDate = releaseDate.substringBefore("]")
-                            var genres = text.substringAfter("genres=["); genres = genres.substringBefore("]")
-                            var imageURL = text.substringAfter("imageURL=["); imageURL = imageURL.substringBefore("]")
-                            var name = text.substringAfter("name=["); name = name.substringBefore("]")
-                            var description = text.substringAfter("description=["); description = description.substringBefore("]")
-                            var userScore = text.substringAfter("userScore=["); userScore = userScore.substringBefore("]")
-                            var id = text.substringAfter("id=["); id = id.substringBefore("]")
-                            var avgDuration = text.substringAfter("avgDuration=["); avgDuration = avgDuration.substringBefore("]")
+                            gameEntry.forEach {
+
+                                val text = it.toString()
+                                var userComment =
+                                    text.substringAfter("userComment=["); userComment =
+                                userComment.substringBefore("]")
+                                var developers = text.substringAfter("developers=["); developers =
+                                developers.substringBefore("]")
+                                var releaseDate =
+                                    text.substringAfter("releaseDate=["); releaseDate =
+                                releaseDate.substringBefore("]")
+                                var genres = text.substringAfter("genres=["); genres =
+                                genres.substringBefore("]")
+                                var imageURL = text.substringAfter("imageURL=["); imageURL =
+                                imageURL.substringBefore("]")
+                                var name = text.substringAfter("name=["); name =
+                                name.substringBefore("]")
+                                var description =
+                                    text.substringAfter("description=["); description =
+                                description.substringBefore("]")
+                                var userScore = text.substringAfter("userScore=["); userScore =
+                                userScore.substringBefore("]")
+                                var id = text.substringAfter("id=["); id = id.substringBefore("]")
+                                var avgDuration =
+                                    text.substringAfter("avgDuration=["); avgDuration =
+                                avgDuration.substringBefore("]")
 
 
-                            gameList.add(UserGame(userScore,userComment,id,name,imageURL,avgDuration,description,developers,genres,releaseDate))
+                                gameList.add(
+                                    UserGame(
+                                        userScore,
+                                        userComment,
+                                        id,
+                                        name,
+                                        imageURL,
+                                        avgDuration,
+                                        description,
+                                        developers,
+                                        genres,
+                                        releaseDate
+                                    )
+                                )
+                            }
+                        } else {
+                            //El campo no existe, así que lo creo para la proxima vez
+                            val emptyArray = mutableListOf<UserGame>()
+                            //reference.set(hashMapOf("userGameList" to emptyArray))
+                            reference.update(hashMapOf("userGameList" to emptyArray) as Map<String, Any>)
                         }
-                    }
-                    else{
-                        //El campo no existe, así que lo creo para la proxima vez
-                        val emptyArray = mutableListOf<UserGame>()
-                        //reference.set(hashMapOf("userGameList" to emptyArray))
-                        reference.update(hashMapOf("userGameList" to emptyArray) as Map<String, Any>)
-                    }
-                    trySend(gameList)
+                        trySend(gameList)
 
-                }
+                    }
+            }
             awaitClose { channel.close() }
         }
 
         //Obtener lista de juegos de usuario
-        fun getUserGamePlanningList(uid: String? = FBAuth.UID): Flow<List<Game>> = callbackFlow{
+        fun getUserGamePlanningList(uid: String? = FBAuth.UID): Flow<List<Game>> = callbackFlow {
 
             val db = Firebase.firestore
             val userUID = uid
-            val reference = db.collection("UserDATA").document(userUID.toString())
 
-            val gameList = mutableListOf<Game>()
+            if (!uid.isNullOrBlank()) {
+                val reference = db.collection("UserDATA").document(userUID.toString())
 
-            reference.get()
-                .addOnSuccessListener { document ->
+                val gameList = mutableListOf<Game>()
 
-                    if (document.get("userGamePlanningList") != null)
-                    {
-                        //Como el campo existe, saco los datos
-                        val gameEntry = document.get("userGamePlanningList") as List<*>
+                reference.get()
+                    .addOnSuccessListener { document ->
 
-                        gameEntry.forEach {
+                        if (document.get("userGamePlanningList") != null) {
+                            //Como el campo existe, saco los datos
+                            val gameEntry = document.get("userGamePlanningList") as List<*>
 
-                            val text = it.toString()
-                            var developers = text.substringAfter("developers=["); developers = developers.substringBefore("]")
-                            var releaseDate = text.substringAfter("releaseDate=["); releaseDate = releaseDate.substringBefore("]")
-                            var genres = text.substringAfter("genres=["); genres = genres.substringBefore("]")
-                            var imageURL = text.substringAfter("imageURL=["); imageURL = imageURL.substringBefore("]")
-                            var name = text.substringAfter("name=["); name = name.substringBefore("]")
-                            var description = text.substringAfter("description=["); description = description.substringBefore("]")
-                            var id = text.substringAfter("id=["); id = id.substringBefore("]")
-                            var avgDuration = text.substringAfter("avgDuration=["); avgDuration = avgDuration.substringBefore("]")
+                            gameEntry.forEach {
 
-                            gameList.add(Game(id,name,imageURL,avgDuration,description,developers,genres,releaseDate))
+                                val text = it.toString()
+                                var developers = text.substringAfter("developers=["); developers =
+                                developers.substringBefore("]")
+                                var releaseDate =
+                                    text.substringAfter("releaseDate=["); releaseDate =
+                                releaseDate.substringBefore("]")
+                                var genres = text.substringAfter("genres=["); genres =
+                                genres.substringBefore("]")
+                                var imageURL = text.substringAfter("imageURL=["); imageURL =
+                                imageURL.substringBefore("]")
+                                var name = text.substringAfter("name=["); name =
+                                name.substringBefore("]")
+                                var description =
+                                    text.substringAfter("description=["); description =
+                                description.substringBefore("]")
+                                var id = text.substringAfter("id=["); id = id.substringBefore("]")
+                                var avgDuration =
+                                    text.substringAfter("avgDuration=["); avgDuration =
+                                avgDuration.substringBefore("]")
+
+                                gameList.add(
+                                    Game(
+                                        id,
+                                        name,
+                                        imageURL,
+                                        avgDuration,
+                                        description,
+                                        developers,
+                                        genres,
+                                        releaseDate
+                                    )
+                                )
+                            }
+                        } else {
+                            //El campo no existe, así que lo creo para la proxima vez
+                            val emptyArray = mutableListOf<Game>()
+                            reference.update(hashMapOf("userGamePlanningList" to emptyArray) as Map<String, Any>)
                         }
-                    }
-                    else{
-                        //El campo no existe, así que lo creo para la proxima vez
-                        val emptyArray = mutableListOf<Game>()
-                        reference.update(hashMapOf("userGamePlanningList" to emptyArray) as Map<String, Any>)
-                    }
-                    trySend(gameList)
+                        trySend(gameList)
 
-                }
+                    }
+            }
             awaitClose { channel.close() }
         }
 
@@ -153,6 +207,20 @@ class FBCRUD {
             trySend(gameBannerList)
 
             awaitClose { channel.close() }
+        }
+
+        fun getUsersProfiles(): Flow<List<UserProfile>> = flow{
+            val db = Firebase.firestore
+            val reference = db.collection("UserDATA")
+
+            val userProfileList = mutableListOf<UserProfile>()
+
+            reference.get().await().forEach {
+                val pfp = FBStorage.getPFPURL(it.id)
+                userProfileList.add(UserProfile(it.id,pfp))
+                }
+
+            emit(userProfileList)
         }
         //endregion
 
