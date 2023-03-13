@@ -15,7 +15,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
-import viliApp.CentralizedData
 import viliApp.FBCRUD
 import viliApp.Game
 import viliApp.GameBanner
@@ -53,17 +52,6 @@ class MainScreenViewModel @Inject constructor(savedStateHandle: SavedStateHandle
             FBCRUD.getGameList()
                 .onCompletion { repeat (5) {recommendedList.add(gameList.random())} } // Aquí lanzo recomendaciones según la lista de games
                 .collect { gameList = it as MutableList<Game> }
-        }
-
-        //Además inicializo la lista del jugador por si quiere ver sus estadisticas en el perfil
-        viewModelScope.launch {
-            FBCRUD.getUserGameList()
-                .collect { CentralizedData.gameList.value = it.sortedByDescending { it.userScore }}
-        }
-        //También la de planning por los mismos motivos
-        viewModelScope.launch {
-            FBCRUD.getUserGamePlanningList()
-                .collect { CentralizedData.planningList.value = it.sortedBy { it.name }}
         }
 
         //Ahora inicializo la lista de banners

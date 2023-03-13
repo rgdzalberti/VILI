@@ -31,6 +31,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun startApp() {
 
+    //Obtengo DPI de la pantalla
+    getDeviceConfig()
+
     //Chekeo si el usuario ya está iniciado para no llevarlo a la pantalla de login
 
     //Esto retorna null si el usuario no está logeado

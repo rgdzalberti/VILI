@@ -1,5 +1,6 @@
 package viliApp
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +25,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.vili.myApp.theme.LightBlack
 import com.example.vili.myApp.theme.LightBlack2
 
+//TODO simplificar esto y hacer generico, ademas usar el filtro nuevo generico
 @Composable
 fun LazyList(nav: NavController, searchText: String = "", gameList: List<Game> = emptyList(), userGameList: List<UserGame> = emptyList(), isGameListB: Boolean = false, isUserGameListB: Boolean = false){
 
@@ -184,9 +186,7 @@ fun UserLazyList(nav: NavController, searchText: String, userProfileList: List<U
                     .padding(10.dp),
                 elevation = 5.dp,
             ) {
-
                 UserBox(nav,url = filteredList[item].imageURL, name = filteredList[item].name.take(6), id = filteredList[item].name)
-
             }
         }
     }
@@ -194,7 +194,7 @@ fun UserLazyList(nav: NavController, searchText: String, userProfileList: List<U
 
 @Composable
 fun UserBox(nav:NavController,url: String, name: String, id:String) {
-    Box(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize().clickable { nav.navigate(route = "${Destinations.Profile.ruta}/${id}") }) {
             Image(
                 modifier = Modifier
                     .fillMaxSize()

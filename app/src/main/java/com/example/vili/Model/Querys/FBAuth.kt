@@ -3,6 +3,7 @@ package com.example.vili.Model.Querys
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.mutableStateOf
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -14,7 +15,7 @@ import java.lang.Exception
 class FBAuth {
     companion object {
 
-        var UID = Firebase.auth.uid
+        var UID = mutableStateOf(Firebase.auth.uid.toString())
 
         //region LOGIN
         fun onLogIn(email: String, password: String, context: Context, callback: (Boolean) -> Unit) {
@@ -36,7 +37,7 @@ class FBAuth {
                         callback(true)
                     }
             } catch (error: Exception) {
-                Log.i("wawa","aaaaaa")
+
                 Toast.makeText(context, "No dejes campos vacios", Toast.LENGTH_SHORT).show()
                 callback(false)
             }

@@ -1,4 +1,4 @@
-package viliApp
+package com.example.vili.Screens.Body.GameDetails
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -20,23 +19,20 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.vili.R
-
-@Preview
-@Composable
-fun previewGameDetails() {
-    GameDetails(rememberNavController())
-}
+import viliApp.DeviceConfig
 
 @Composable
-fun GameDetails(navController: NavController, viewModel: GameDetailsViewModel = hiltViewModel()) {
+fun GameDetails(gameID: String,navController: NavController, viewModel: GameDetailsViewModel = hiltViewModel()) {
+
+    LaunchedEffect(Unit){
+        viewModel.updateValues(gameID)
+    }
 
     //Caja para el submenú
     Box() {
@@ -190,7 +186,7 @@ fun GameDetails(navController: NavController, viewModel: GameDetailsViewModel = 
                 viewModel::statusMoreOptions,
                 viewModel::addGameToUserList,
                 viewModel::removeGameFromUserList,
-                viewModel.gameID,
+                gameID,
                 viewModel::dropDownValue,
                 viewModel.ddValue,
                 viewModel::addGameToUserPlanningList,

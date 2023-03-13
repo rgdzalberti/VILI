@@ -33,6 +33,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.vili.Common.Complex.BottomBar
 import com.example.vili.Common.Complex.BottomBarClass
 import com.example.vili.Common.Composables.*
+import com.example.vili.Model.Querys.FBAuth
 import com.example.vili.myApp.theme.LightBlack
 import com.example.vili.myApp.theme.ObscureBlack
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -52,11 +53,7 @@ fun PreviewTTT(){
 @Composable
 fun HomeScreen(nav: NavController, viewModel: MainScreenViewModel = hiltViewModel()){
 
-    LaunchedEffect(Unit){
-        CentralizedData.profileID.value = Firebase.auth.uid.toString()
-    }
-    //Obtengo la información del dispositivo (DPI, Medidas)
-    getDeviceConfig()
+
     //Modifico la barra superior
     systemBarColor(color = ObscureBlack)
 
@@ -66,7 +63,7 @@ fun HomeScreen(nav: NavController, viewModel: MainScreenViewModel = hiltViewMode
     //La función que contiene la pantalla está contenida por una Box, esto se hace porque dentro de la Box
     //en la parte de abajo se ponen los submenus para que se superpongan
 
-    Scaffold(bottomBar = { BottomBar() }) {
+    Scaffold(bottomBar = { BottomBar(nav) }) {
         Box() {
             //Este es el cuerpo de la pantalla
             HomeBody(nav)
@@ -117,6 +114,7 @@ fun HomeScreen(nav: NavController, viewModel: MainScreenViewModel = hiltViewMode
     }
 
     //region NAVIGATE
+    /*
     if (NavigationFunctions.changeScreen.value){
         NavigationFunctions.changeScreen(-1)
         when(NavigationFunctions.screenID.value){
@@ -125,6 +123,8 @@ fun HomeScreen(nav: NavController, viewModel: MainScreenViewModel = hiltViewMode
             2 -> {nav.navigate(route = Destinations.ListScreen.ruta)}
         }
     }
+
+     */
     //endregion
 
     //region LOGOUT
@@ -225,8 +225,7 @@ fun HomeBody(nav:NavController,viewModel: MainScreenViewModel = hiltViewModel())
                                                 .fillMaxSize()
                                                 .clickable {
                                                     if (viewModel.clickable) {
-                                                        CentralizedData.updateGameID(viewModel.bannerList[page].gameID)
-                                                        nav.navigate(Destinations.Pantalla3.ruta)
+                                                        nav.navigate("${Destinations.Pantalla3.ruta}/${viewModel.bannerList[page].gameID}")
                                                         viewModel.updatePendingValues()
                                                     }
                                                 },

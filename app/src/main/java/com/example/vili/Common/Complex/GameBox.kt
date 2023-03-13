@@ -61,8 +61,7 @@ fun GameBox(
                     .clickable
                     {
                         if (viewModel.clickable) {
-                            CentralizedData.updateGameID(key)
-                            nav.navigate(Destinations.Pantalla3.ruta)
+                            nav.navigate("${Destinations.Pantalla3.ruta}/${key}")
                             viewModel.updatePendingValues()
                         }
                     },

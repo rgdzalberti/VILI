@@ -58,12 +58,11 @@ class FBCRUD {
 
         }
 
-        fun getUserGameList(): Flow<List<UserGame>> = callbackFlow {
+        fun getUserGameList(uid:String): Flow<List<UserGame>> = callbackFlow {
 
             val db = Firebase.firestore
-            val userUID = Firebase.auth.uid
 
-                val reference = db.collection("UserDATA").document(userUID.toString())
+                val reference = db.collection("UserDATA").document(uid)
 
                 val gameList = mutableListOf<UserGame>()
 
@@ -101,6 +100,7 @@ class FBCRUD {
                                     text.substringAfter("avgDuration=["); avgDuration =
                                 avgDuration.substringBefore("]")
 
+                                        //TODO ARREGLAR LO DE ARRIBA
 
                                 gameList.add(
                                     UserGame(
@@ -120,7 +120,6 @@ class FBCRUD {
                         } else {
                             //El campo no existe, así que lo creo para la proxima vez
                             val emptyArray = mutableListOf<UserGame>()
-                            //reference.set(hashMapOf("userGameList" to emptyArray))
                             reference.update(hashMapOf("userGameList" to emptyArray) as Map<String, Any>)
                         }
                         trySend(gameList)
@@ -131,12 +130,11 @@ class FBCRUD {
         }
 
         //Obtener lista de juegos de usuario
-        fun getUserGamePlanningList(): Flow<List<Game>> = callbackFlow {
+        fun getUserGamePlanningList(uid:String): Flow<List<Game>> = callbackFlow {
 
             val db = Firebase.firestore
-            val userUID = Firebase.auth.uid
 
-                val reference = db.collection("UserDATA").document(userUID.toString())
+                val reference = db.collection("UserDATA").document(uid)
 
                 val gameList = mutableListOf<Game>()
 
@@ -248,7 +246,6 @@ class FBCRUD {
                         //reference.set(hashMapOf("userGameList" to emptyArray))
                         reference.update("userGameList", FieldValue.arrayUnion(data))
                     }
-                    CentralizedData.tellGameListToReload(true)
                 }
             }
 
@@ -275,7 +272,6 @@ class FBCRUD {
                     //reference.set(hashMapOf("userGamePlanningList" to emptyArray))
                     reference.update("userGamePlanningList", FieldValue.arrayUnion(data))
                 }
-                CentralizedData.tellGameListToReload(true)
             }
         }
         //endregion
@@ -295,7 +291,6 @@ class FBCRUD {
 
                     //reference.set(hashMapOf("userGameList" to newList))
                     reference.update(hashMapOf("userGameList" to newList) as Map<String, Any>)
-                    CentralizedData.tellGameListToReload(true)
                 }
 
         }
@@ -314,7 +309,6 @@ class FBCRUD {
 
                     //reference.set(hashMapOf("userGamePlanningList" to newList))
                     reference.update(hashMapOf("userGamePlanningList" to newList) as Map<String, Any>)
-                    CentralizedData.tellGameListToReload(true)
                 }
 
         }

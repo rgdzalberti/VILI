@@ -12,62 +12,63 @@ import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
-import viliApp.CentralizedData
 import viliApp.FBCRUD
+import viliApp.Game
+import viliApp.UserGame
 import javax.inject.Inject
 
 @HiltViewModel
 class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : ViewModel() {
 
     var tabIndex by savedStateHandle.saveable { mutableStateOf(0) }
+    var userGameList by savedStateHandle.saveable { mutableStateOf(listOf<UserGame>()) }
+    var userPlanningList by savedStateHandle.saveable { mutableStateOf(listOf<Game>()) }
 
+    //TODO PULL TO REFRESH??
 
-    init {
-
-
-        if (CentralizedData.gameList.value.isEmpty())
-            viewModelScope.launch {
-                FBCRUD.getUserGameList()
-                    .collect { CentralizedData.gameList.value = it }
-            }
-
-
-
-    }
-
-    fun reloadList(){
+    fun obtainLists(uid:String){
         viewModelScope.launch {
-            FBCRUD.getUserGameList()
-                .onCompletion { CentralizedData.tellGameListToReload(false) }
-                .collect { CentralizedData.gameList.value = it; Log.i("wawa",it.toString()) }
-        }
+            FBCRUD.getUserGameList(uid)
+                .collect { userGameList = it }}
 
         viewModelScope.launch {
-            FBCRUD.getUserGamePlanningList()
-                .onCompletion { CentralizedData.tellGameListToReload(false) }
-                .collect { CentralizedData.planningList.value = it }
+            FBCRUD.getUserGamePlanningList(uid)
+                .collect { userPlanningList = it }
         }
-
     }
 
     fun updateTabData(newValue: Int){
         tabIndex = newValue
     }
 
-    fun sortList(newValue: Int){
+    fun sortList(newValue: Int) {
 
-        when(newValue){
+        var oldGameList = listOf<UserGame>()
+        var oldPlanningList = listOf<Game>()
+
+        //Triggeo la recomposición de la lista vaciando y actualizando la lista
+        //Si simplemente sortease no funcionaría ya que los contenidos siguen siendo los mismos
+
+        when (newValue) {
 
             0 -> {
-                if (tabIndex==0){
-                    CentralizedData.gameList.value = CentralizedData.gameList.value.sortedBy { it.name }}
-                else if (tabIndex==1){
-                    CentralizedData.planningList.value = CentralizedData.planningList.value.sortedBy { it.name }}
+                if (tabIndex == 0) {
+                    oldGameList = userGameList.sortedBy { it.name }
+                    userGameList = emptyList()
+                    userGameList = oldGameList
+                }
+                else if (tabIndex == 1) {
+                    oldPlanningList = userPlanningList.sortedBy { it.name }
+                    userPlanningList = emptyList()
+                    userPlanningList = oldPlanningList
+                }
 
             }
 
             1 -> {
-                CentralizedData.gameList.value = CentralizedData.gameList.value.sortedByDescending { it.userScore }
+                oldGameList = userGameList.sortedByDescending { it.userScore }
+                userGameList = emptyList()
+                userGameList = oldGameList
             }
 
         }

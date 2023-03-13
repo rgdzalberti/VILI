@@ -48,6 +48,20 @@ fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: Li
     val pagerState = rememberPagerState()
     val scope = rememberCoroutineScope()
 
+    //region USERS
+    //Actualizo la lista de usuarios. Sería mas correcto tenerlo en un ViewModel, pero para lo poco que es me parece contraproducente
+    //crear otro archivo
+    var userList by remember { mutableStateOf(listOf<UserProfile>()) }
+
+    LaunchedEffect(Unit) {
+        FBCRUD.getUsersProfiles().collect {
+            if (userList != it) {
+                userList = it.sortedBy { it.name }
+            }
+        }
+    }
+    //endregion
+
     Box() {
 
         Button(modifier = Modifier
@@ -114,20 +128,9 @@ fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: Li
 
                 when(page){
                     0 -> {TabDataSearch.updateTabData(0); LazyList(nav, searchText, gameList = gameList, isGameListB = true)  }
-                    1 -> {
-                        TabDataSearch.updateTabData(1);
+                    1 -> {TabDataSearch.updateTabData(1)
 
-                        //Si no se ha hecho la query de rellenar la lista de usuarios se hace ahora
-                        if (CentralizedData.userProfileList.value.isEmpty()) {
-
-                            LaunchedEffect(Unit) {
-                                FBCRUD.getUsersProfiles().collect{CentralizedData.userProfileList.value = it.sortedBy { it.name }}
-                            }
-
-
-                        }
-
-                        UserLazyList(nav,searchText,CentralizedData.userProfileList.value)
+                        UserLazyList(nav,searchText,userList)
                     }
                 }
 

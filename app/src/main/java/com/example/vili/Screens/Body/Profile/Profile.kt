@@ -1,7 +1,6 @@
 package com.example.vili.Screens.Body.Profile
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -10,7 +9,6 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
@@ -26,13 +24,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.vili.Common.Complex.BottomBar
 import com.example.vili.Common.Complex.BottomBarClass
@@ -42,14 +37,9 @@ import com.example.vili.Common.Composables.SettingsMenu
 import com.example.vili.Common.Composables.TopBar
 import com.example.vili.Model.Querys.FBAuth
 import com.example.vili.Screens.Body.Home.MainScreenViewModel
-import com.example.vili.Screens.Body.MyList.GameListBody
 import com.example.vili.myApp.theme.LightBlack
 import com.example.vili.myApp.theme.LightBlack2
 import com.example.vili.myApp.theme.ObscureBlack
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import viliApp.Destinations
 import viliApp.DeviceConfig
 import viliApp.NavigationFunctions
@@ -64,19 +54,11 @@ fun Profile(
     MainScreenViewModel: MainScreenViewModel = hiltViewModel(), viewModel: ProfileViewModel = hiltViewModel()
 ) {
 
-
-    val pullRefreshState = rememberPullRefreshState(viewModel.refreshing, { viewModel.refresh() })
-
-    //Guardo el UID nada mas entrar por si viajo a una lista
-    /*
-    if (profileID != null) {
-        viewModel.setProfileUID(profileID)
-        viewModel.init()
+    LaunchedEffect(Unit){
+        viewModel.updateData(profileID)
     }
 
-     */
-
-
+    val pullRefreshState = rememberPullRefreshState(viewModel.refreshing, { viewModel.refresh(profileID) })
 
     //Upper Bar Color
     systemBarColor(color = ObscureBlack)
@@ -84,7 +66,7 @@ fun Profile(
     BottomBarClass.updateIndex(0)
 
 
-    Scaffold(bottomBar = { BottomBar() }) {
+    Scaffold(bottomBar = { BottomBar(nav) }) {
         Box(
             Modifier
                 .pullRefresh(pullRefreshState)
@@ -98,7 +80,7 @@ fun Profile(
             )
 
             //Este es el cuerpo de la pantalla
-            ProfileBody(nav = nav, profileID = profileID)
+            ProfileBody(nav = nav, uid = profileID)
 
 
             //region SUBMENU SEARCH
@@ -164,32 +146,8 @@ fun Profile(
     }
     //endregion
 
-    //region NAVIGATE
-    if (NavigationFunctions.changeScreen.value) {
-        NavigationFunctions.changeScreen(-1)
-        when (NavigationFunctions.screenID.value) {
-            0 -> {}
-            1 -> {
-                nav.navigate(route = Destinations.MainScreen.ruta)
-            }
-            2 -> {
-                nav.navigate(route = Destinations.ListScreen.ruta)
-            }
-            4->{
-                //Si ha viajado a su propia lista se le cambia de pestaña
-                if (profileID==FBAuth.UID){
-                    nav.navigate(route = Destinations.ListScreen.ruta)
-                } else {
-                    //Si no, le muestro la lista, actualizando primero los datos
-                    viewModel.updateGameListValues()
-                    nav.navigate(route = Destinations.UserList.ruta) //TODO
 
-                }
-            }
-        }
-    }
-    //endregion
-
+    //TODO se puede mover LOGOUT?
     //region LOGOUT
     if (MainScreenViewModel.logOutnPop) {
         NavigationFunctions.NavigatePopLogOut(
@@ -202,9 +160,8 @@ fun Profile(
 
 @Composable
 fun ProfileBody(
-    profileID: String?,
+    uid: String,
     nav: NavController,
-    MainScreenViewModel: MainScreenViewModel = hiltViewModel(),
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
 
@@ -231,7 +188,7 @@ fun ProfileBody(
                 modifier = Modifier
                     .fillMaxSize()
                     .clickable {
-                        if (FBAuth.UID.toString()==profileID) {
+                        if (FBAuth.UID.toString() == uid) {
                             CurrentImage.imageURL.value = viewModel.bannerURL
                             CurrentImage.editingPFP.value = false
                             nav.navigate(route = Destinations.EditImage.ruta)
@@ -264,7 +221,7 @@ fun ProfileBody(
                         .clip(RoundedCornerShape(16.dp))
                         .fillMaxSize()
                         .clickable {
-                            if (FBAuth.UID.toString()==profileID) {
+                            if (FBAuth.UID.toString() == uid) {
                                 CurrentImage.imageURL.value = viewModel.pfpURL
                                 CurrentImage.editingPFP.value = true
                                 nav.navigate(route = Destinations.EditImage.ruta)
@@ -277,14 +234,14 @@ fun ProfileBody(
 
             //region Nombre
             val text = when{
-                FBAuth.UID == profileID -> {"${FBAuth.getUserEmail()?.substringBefore("@")}"}
-                else -> {"${profileID.toString().take(6)}"}
+                FBAuth.UID.value == uid -> {"${FBAuth.getUserEmail()?.substringBefore("@")}"}
+                else -> {"${uid.toString().take(6)}"}
             }
             Row(
                 Modifier
                     .background(Color.Transparent)
                     .offset(y = (40).dp)) {
-                Text(modifier = Modifier.fillMaxWidth(), text = "${FBAuth.getUserEmail()?.substringBefore("@")}", textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                Text(modifier = Modifier.fillMaxWidth(), text = text, textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Bold)
             }
             //endregion
         }
@@ -335,7 +292,16 @@ fun ProfileBody(
                     .fillMaxHeight(0.25f)
                     .background(LightBlack2, RoundedCornerShape(10.dp))
                     .padding(5.dp)
-                    .clickable { NavigationFunctions.changeScreen(4) },
+                    .clickable {
+
+                        //Si está en su propio perfil se le envia a la pestaña correspondiente, si no se abre la nueva ventana
+                        if (uid == FBAuth.UID.value) {
+                            nav.navigate("${Destinations.ListScreen.ruta}/${FBAuth.UID.value}")
+                        } else {
+                            nav.navigate("${Destinations.UserList.ruta}/${uid}")
+                        }
+
+                    },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {

@@ -1,5 +1,6 @@
 package com.example.vili.Common.Complex
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -22,14 +23,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.vili.Model.Querys.FBAuth
 import com.example.vili.R
 import com.example.vili.Screens.Body.Home.MainScreenViewModel
-import viliApp.CentralizedData
+import viliApp.Destinations
 import viliApp.NavigationFunctions
 
 @Composable
-fun BottomBar(viewModel: MainScreenViewModel = hiltViewModel()) {
+fun BottomBar(navController: NavController,viewModel: MainScreenViewModel = hiltViewModel()) {
 
     AnimatedVisibility(
         visible = BottomBarClass.showBar.value, enter = slideInVertically(
@@ -51,15 +53,14 @@ fun BottomBar(viewModel: MainScreenViewModel = hiltViewModel()) {
             BottomNavigationItem(icon = {
                 Icon(imageVector = Icons.Default.Person, "")
             }, selected = (BottomBarClass.selectedIndex.value == 0), onClick = {
-                CentralizedData.profileID.value = FBAuth.UID.toString()
-                NavigationFunctions.changeScreen(0)
+                navController.navigate("${Destinations.Profile.ruta}/${FBAuth.UID.value}")
             }, selectedContentColor = Color.Red, unselectedContentColor = Color.White
             )
 
             BottomNavigationItem(icon = {
                 Icon(imageVector = Icons.Default.Home, "")
             }, selected = (BottomBarClass.selectedIndex.value == 1), onClick = {
-                NavigationFunctions.changeScreen(1)
+                navController.navigate(route = Destinations.MainScreen.ruta)
             }, selectedContentColor = Color.Red, unselectedContentColor = Color.White
             )
 
@@ -70,8 +71,7 @@ fun BottomBar(viewModel: MainScreenViewModel = hiltViewModel()) {
                     modifier = Modifier.size(30.dp)
                 )
             }, selected = (BottomBarClass.selectedIndex.value == 2), onClick = {
-                CentralizedData.profileID.value = FBAuth.UID.toString()
-                NavigationFunctions.changeScreen(2)
+                navController.navigate("${Destinations.ListScreen.ruta}/${FBAuth.UID.value}")
             }, selectedContentColor = Color.Red, unselectedContentColor = Color.White
             )
         }

@@ -1,19 +1,20 @@
-package viliApp
+package com.example.vili.Screens.Body.GameDetails
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.example.vili.Model.Querys.FBAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import viliApp.CentralizedData.Companion.getGameID
+import viliApp.FBCRUD
+import viliApp.Game
 import javax.inject.Inject
 
 @HiltViewModel
 class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : ViewModel() {
 
-    var gameID by savedStateHandle.saveable { mutableStateOf("") }
     var gameData by savedStateHandle.saveable { mutableStateOf(Game()) }
     var enableMoreOptions by savedStateHandle.saveable { mutableStateOf(false) }
 
@@ -27,28 +28,34 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
     var planned by savedStateHandle.saveable { mutableStateOf(false) }
     var stars by savedStateHandle.saveable { mutableStateOf(0) }
 
-    init {
-        //Obtengo la referencia del juego primero en mi clase centralizada
-
-        gameID = getGameID()
-
+    fun updateValues(gameID: String) {
         //Hago una query en busca de información sobre este juego
-        viewModelScope.launch{
-            FBCRUD.getGame(gameID)
-                .collect {
-                    gameData = it; listaGenres = gameData.genres.split(",")
-
-                    //Inicializo por primera vez mis variables completed y planned aquí
-                    completed = CentralizedData.gameList.value.any { it.id == gameID }
-                    planned = CentralizedData.planningList.value.any { it.id == gameID }
-
-                    //Si el juego está completado, esta query de abajo nunca dará null
-                    if (completed) {
-                        stars = CentralizedData.gameList.value.find { it.id == gameID }?.userScore!!.toInt()
-                    }
-
-                }
+        viewModelScope.launch {
+            FBCRUD.getGame(gameID).collect {
+                gameData = it; listaGenres = gameData.genres.split(",")
+            }
         }
+
+        viewModelScope.launch {
+            //Inicializo por primera vez mis variables completed y planned aquí
+            FBCRUD.getUserGameList(FBAuth.UID.value)
+                .collect { completed = it.any { it.id == gameID } }
+        }
+
+        viewModelScope.launch {
+            FBCRUD.getUserGamePlanningList(FBAuth.UID.value)
+                .collect { planned = it.any { it.id == gameID } }
+        }
+
+
+        viewModelScope.launch {
+            //Si el juego está completado, esta query de abajo nunca dará null
+            if (completed) {
+                FBCRUD.getUserGameList(FBAuth.UID.value)
+                    .collect { stars = it.find { it.id == gameID }?.userScore!!.toInt() }
+            }
+        }
+
 
     }
 
@@ -62,10 +69,7 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
     }
 
     fun removeGameFromUserList(gameID: String){
-
-        var wasGameInList = false
         FBCRUD.removeGameFromUserList(gameID)
-
     }
     //PLANNING
     fun addGameToUserPlanningList(score: Int = 0, comment: String = ""){
@@ -73,10 +77,7 @@ class GameDetailsViewModel @Inject constructor(savedStateHandle: SavedStateHandl
     }
 
     fun removeGameFromUserPlanningList(gameID: String){
-
-        var wasGameInList = false
         FBCRUD.removeGameFromUserPlanningList(gameID)
-
     }
 
     fun dropDownValue(dropIndex: Int){

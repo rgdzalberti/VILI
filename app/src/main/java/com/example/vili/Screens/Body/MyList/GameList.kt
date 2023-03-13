@@ -1,6 +1,7 @@
 package com.example.vili.Screens.Body.MyList
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -25,44 +26,33 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import viliApp.*
 
-@Preview
-@Composable
-fun previewGameList() {
-    GameList(rememberNavController())
-}
-
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun GameList(navController: NavController, viewModel: GameListViewModel = hiltViewModel()) {
+fun GameList(uid:String,navController: NavController, viewModel: GameListViewModel = hiltViewModel()) {
 
     //Actualizo el icono del BottomBar
     BottomBarClass.updateIndex(2)
 
-    Scaffold(bottomBar = { BottomBar() })
+    Scaffold(bottomBar = { BottomBar(navController) })
     {
-        GameListBody(navController = navController)
+        GameListBody(navController = navController, uid = uid)
     }
 
     //PopStackBack con OS
     BackPressHandler(onBackPressed = { navController.popBackStack()  })
 
-    //Aquí cambio la pantalla si se toca el bottomBar
-    if (NavigationFunctions.changeScreen.value){
-        NavigationFunctions.changeScreen(-1)
-        when(NavigationFunctions.screenID.value){
-            0 -> {navController.navigate(route = Destinations.Profile.ruta)}
-            1 -> {navController.navigate(route = Destinations.MainScreen.ruta)}
-            2 -> {}
-        }
-    }
-
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun GameListBody(navController:NavController, viewModel: GameListViewModel = hiltViewModel(), MainScreenViewModel: MainScreenViewModel = hiltViewModel()){
+fun GameListBody(uid: String,navController:NavController, viewModel: GameListViewModel = hiltViewModel(), MainScreenViewModel: MainScreenViewModel = hiltViewModel()){
     systemBarColor(color = Color.Black)
-    getDeviceConfig()
+
+    //Con la UID proporcionada por parámetro lanzo la query para obtener las listas
+    LaunchedEffect(Unit){
+        viewModel.obtainLists(uid)
+    }
+
 
     //Icono arriba izquierda popear pantalla
     if (viewModel.popBack){
@@ -74,12 +64,6 @@ fun GameListBody(navController:NavController, viewModel: GameListViewModel = hil
     //No se puede poner en el viewmodel. Utilizo esto para controlar la pestaña y su animación
     val pagerState = rememberPagerState()
     val scope = rememberCoroutineScope()
-
-    //Se hace la comprobación de si se ha hecho algún delete desde la última vez que estuvo en esta pantalla
-    //Si la respuesta es sí, esto será true y se actualizará la lista localmente también.
-    if (CentralizedData.recomposeUI.value == true) {
-        reloadGameList(viewModel::reloadList)
-    }
 
     Column() {
 
@@ -120,8 +104,10 @@ fun GameListBody(navController:NavController, viewModel: GameListViewModel = hil
         HorizontalPager(count = 2,state = pagerState) { page ->
 
             when(page){
-                0 -> {viewModel.updateTabData(0); LazyList(navController, userGameList = CentralizedData.gameList.value, isUserGameListB = true)  }
-                1 -> {viewModel.updateTabData(1); LazyList(navController, gameList = CentralizedData.planningList.value, isGameListB = true) }
+
+                0 -> {viewModel.updateTabData(0); LazyList(navController, userGameList = viewModel.userGameList, isUserGameListB = true)  }
+                1 -> {viewModel.updateTabData(1); LazyList(navController, gameList = viewModel.userPlanningList, isGameListB = true) }
+
             }
 
         }
@@ -129,12 +115,6 @@ fun GameListBody(navController:NavController, viewModel: GameListViewModel = hil
     }
 
     }
-}
-
-
-//Esta es la función llamada para actualizar la lista localmente
-fun reloadGameList(reloadList: () -> Unit){
-    reloadList()
 }
 
 @OptIn(ExperimentalPagerApi::class)
