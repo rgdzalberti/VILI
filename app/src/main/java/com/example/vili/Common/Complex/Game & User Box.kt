@@ -33,12 +33,9 @@ fun GameBox(
     var rating = ""
     repeat(Rating) { rating += "★" }
 
-
-    var maxVisibleLength by remember { mutableStateOf(titulo.length) }
-    var modTitle = if (titulo.length >= maxVisibleLength + 2) {
-        "${titulo.subSequence(0, maxVisibleLength)}..."
+    var modTitle = if (titulo.length >= 17) {
+        "${titulo.subSequence(0, 15)}..."
     } else titulo
-
 
     Box(
         modifier = Modifier
@@ -84,11 +81,6 @@ fun GameBox(
         ) {
 
             Text(
-                onTextLayout = { textLayoutResult ->
-                    if (textLayoutResult.hasVisualOverflow) {
-                        val visibleLength = textLayoutResult.getLineEnd(lineIndex = 0, visibleEnd = true)
-                        maxVisibleLength = visibleLength - 2
-                    }},
                 text = modTitle,
                 maxLines = 1,
                 modifier = Modifier.padding(start = 5.dp, top = 5.dp),
