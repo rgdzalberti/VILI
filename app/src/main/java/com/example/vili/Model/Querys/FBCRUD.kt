@@ -58,7 +58,6 @@ class FBCRUD {
 
         }
 
-        /*
         fun getUserGameList(uid:String): Flow<List<UserGame>> = callbackFlow {
 
             val db = Firebase.firestore
@@ -101,8 +100,6 @@ class FBCRUD {
                                     text.substringAfter("avgDuration=["); avgDuration =
                                 avgDuration.substringBefore("]")
 
-                                        //TODO ARREGLAR LO DE ARRIBA
-
                                 gameList.add(
                                     UserGame(
                                         userScore,
@@ -130,64 +127,7 @@ class FBCRUD {
             awaitClose { channel.close() }
         }
 
-         */
 
-        fun getUserGameList(uid:String): Flow<List<UserGame>> = callbackFlow {
-
-            val db = Firebase.firestore
-
-            val reference = db.collection("UserDATA").document(uid)
-
-            val gameList = mutableListOf<UserGame>()
-
-            reference.get()
-                .addOnSuccessListener { document ->
-
-                    if (document.get("userGameList") != null) {
-                        val gameEntry = document.get("userGameList") as List<HashMap<String, Any>>
-
-                        Log.i("wawa",gameEntry.toString())
-
-                        for (entry in gameEntry) {
-                            val userComment = entry["userComment"] as String
-                            val developers = entry["developers"] as String
-                            val releaseDate = entry["releaseDate"] as String
-                            val genres = entry["genres"] as String
-                            val imageURL = entry["imageURL"] as String
-                            val name = entry["name"] as String
-                            val description = entry["description"] as String
-                            val userScore = entry["userScore"] as String
-                            val id = entry["id"] as String
-                            val avgDuration = entry["avgDuration"] as String
-
-                            gameList.add(
-                                UserGame(
-                                    userScore,
-                                    userComment,
-                                    id,
-                                    name,
-                                    imageURL,
-                                    avgDuration,
-                                    description,
-                                    developers,
-                                    genres,
-                                    releaseDate
-                                )
-                            )
-                        }
-                    } else {
-                        val emptyArray = mutableListOf<HashMap<String, Any>>()
-                        reference.update(hashMapOf("userGameList" to emptyArray) as Map<String, Any>)
-                    }
-
-                    trySend(gameList)
-                }
-                .addOnFailureListener { exception ->
-                    Log.d("wawa", "Error obteniendo el documento", exception)
-                }
-
-            awaitClose { channel.close() }
-        }
 
         //Obtener lista de juegos de usuario
         fun getUserGamePlanningList(uid:String): Flow<List<Game>> = callbackFlow {
