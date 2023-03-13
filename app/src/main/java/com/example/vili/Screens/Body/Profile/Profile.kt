@@ -180,7 +180,7 @@ fun ProfileBody(
         Row(
             Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.15f)
+                .fillMaxHeight(0.18f)
                 .background(Color.White)
         ) {
             Box() {

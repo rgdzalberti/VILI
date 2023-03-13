@@ -24,7 +24,7 @@ class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) 
     var userGameList by savedStateHandle.saveable { mutableStateOf(listOf<UserGame>()) }
     var userPlanningList by savedStateHandle.saveable { mutableStateOf(listOf<Game>()) }
 
-    //TODO PULL TO REFRESH??
+    var reorderList by savedStateHandle.saveable { mutableStateOf(false) }
 
     fun obtainLists(uid:String){
         viewModelScope.launch {
@@ -74,6 +74,7 @@ class GameListViewModel @Inject constructor(savedStateHandle: SavedStateHandle) 
         }
 
     }
+
 
     //region NavigateHome
     var popBack by savedStateHandle.saveable { mutableStateOf(false) }

@@ -1,5 +1,6 @@
 package viliApp
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -47,9 +48,9 @@ fun GameLazyRow(title:String="",nav:NavController,gameList:List<Game>){
 }
 
 @Composable
-fun GameLazyList(nav: NavController,searchText: String,gameList: List<Game>){
+fun GameLazyList(nav: NavController,searchText: String,gameList: List<Game>, sortSettings:Boolean = false){
 
-    val filteredList = filterByText(searchText, gameList) { it.name }
+    val filteredList =  if (!sortSettings) {(filterByText(searchText, gameList) { it.name })} else {gameList}
 
     LazyVerticalGrid(modifier = Modifier.fillMaxSize(), columns = GridCells.Fixed(2), contentPadding = PaddingValues(bottom = 50.dp)) {
         items(filteredList.size) { item ->
@@ -68,9 +69,9 @@ fun GameLazyList(nav: NavController,searchText: String,gameList: List<Game>){
 
 
 @Composable
-fun UserGameLazyList(nav: NavController,searchText: String,userGameList: List<UserGame>){
+fun UserGameLazyList(nav: NavController,searchText: String,userGameList: List<UserGame>, sortSettings:Boolean = false){
 
-    val filteredList = filterByText(searchText, userGameList) { it.name }
+    val filteredList =  if (!sortSettings) {(filterByText(searchText, userGameList) { it.name })} else {userGameList}
 
     LazyVerticalGrid(modifier = Modifier.fillMaxSize(), columns = GridCells.Fixed(2), contentPadding = PaddingValues(bottom = 50.dp)) {
         items(filteredList.size) { item ->
@@ -80,7 +81,7 @@ fun UserGameLazyList(nav: NavController,searchText: String,userGameList: List<Us
                     .padding(10.dp),
                 elevation = 5.dp,
             ) {
-                GameBox(nav = nav,filteredList[item].id,filteredList[item].name,filteredList[item].imageURL,userGameList[userGameList.size - 1].userScore.toInt())
+                GameBox(nav = nav,filteredList[item].id,filteredList[item].name,filteredList[item].imageURL,filteredList[item].userScore.toInt())
             }
         }
     }

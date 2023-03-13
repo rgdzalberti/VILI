@@ -1,12 +1,13 @@
 package viliApp
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -32,9 +33,12 @@ fun GameBox(
     var rating = ""
     repeat(Rating) { rating += "★" }
 
-    var modTitle = if (titulo.length >= 17) {
-        "${titulo.subSequence(0, 15)}..."
+
+    var maxVisibleLength by remember { mutableStateOf(titulo.length) }
+    var modTitle = if (titulo.length >= maxVisibleLength + 2) {
+        "${titulo.subSequence(0, maxVisibleLength)}..."
     } else titulo
+
 
     Box(
         modifier = Modifier
@@ -80,6 +84,11 @@ fun GameBox(
         ) {
 
             Text(
+                onTextLayout = { textLayoutResult ->
+                    if (textLayoutResult.hasVisualOverflow) {
+                        val visibleLength = textLayoutResult.getLineEnd(lineIndex = 0, visibleEnd = true)
+                        maxVisibleLength = visibleLength - 2
+                    }},
                 text = modTitle,
                 maxLines = 1,
                 modifier = Modifier.padding(start = 5.dp, top = 5.dp),

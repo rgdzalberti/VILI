@@ -42,7 +42,7 @@ fun GameList(uid:String,navController: NavController, viewModel: GameListViewMod
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun GameListBody(uid: String, navController:NavController, viewModel: GameListViewModel = hiltViewModel(), HomeScreenViewModel: HomeScreenViewModel = hiltViewModel()){
+fun GameListBody(uid: String, navController:NavController, viewModel: GameListViewModel = hiltViewModel()){
     systemBarColor(color = Color.Black)
 
     //Con la UID proporcionada por parámetro lanzo la query para obtener las listas
@@ -105,17 +105,13 @@ fun GameListBody(uid: String, navController:NavController, viewModel: GameListVi
                 0 -> {
                     viewModel.updateTabData(0);
 
-                    UserGameLazyList(navController, "", viewModel.userGameList);
-
+                    UserGameLazyList(navController, "", viewModel.userGameList, sortSettings = true);
 
                 }
 
                 1 -> {
-                    viewModel.updateTabData(1); GameLazyList(
-                        navController,
-                        "",
-                        gameList = viewModel.userPlanningList
-                    );
+                    viewModel.updateTabData(1);
+                    GameLazyList(navController, "", gameList = viewModel.userPlanningList, sortSettings = true)
                 }
 
             }
