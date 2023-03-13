@@ -188,7 +188,7 @@ fun ProfileBody(
                 modifier = Modifier
                     .fillMaxSize()
                     .clickable {
-                        if (FBAuth.UID.toString() == uid) {
+                        if (FBAuth.UID.value == uid) {
                             CurrentImage.imageURL.value = viewModel.bannerURL
                             CurrentImage.editingPFP.value = false
                             nav.navigate(route = Destinations.EditImage.ruta)
@@ -221,7 +221,7 @@ fun ProfileBody(
                         .clip(RoundedCornerShape(16.dp))
                         .fillMaxSize()
                         .clickable {
-                            if (FBAuth.UID.toString() == uid) {
+                            if (FBAuth.UID.value == uid) {
                                 CurrentImage.imageURL.value = viewModel.pfpURL
                                 CurrentImage.editingPFP.value = true
                                 nav.navigate(route = Destinations.EditImage.ruta)
@@ -235,7 +235,9 @@ fun ProfileBody(
             //region Nombre
             val text = when{
                 FBAuth.UID.value == uid -> {"${FBAuth.getUserEmail()?.substringBefore("@")}"}
-                else -> {"${uid.toString().take(6)}"}
+                else -> {
+                    uid.take(6)
+                }
             }
             Row(
                 Modifier
