@@ -1,7 +1,6 @@
 package com.example.vili.Screens.Body.Home
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -14,18 +13,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -33,13 +27,10 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.vili.Common.Complex.BottomBar
 import com.example.vili.Common.Complex.BottomBarClass
 import com.example.vili.Common.Composables.*
-import com.example.vili.Model.Querys.FBAuth
 import com.example.vili.myApp.theme.LightBlack
 import com.example.vili.myApp.theme.ObscureBlack
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import viliApp.*
 import viliApp.NavigationFunctions.Companion.NavigatePopLogOut
 
@@ -51,7 +42,7 @@ fun PreviewTTT(){
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun HomeScreen(nav: NavController, viewModel: MainScreenViewModel = hiltViewModel()){
+fun HomeScreen(nav: NavController, viewModel: HomeScreenViewModel = hiltViewModel()){
 
 
     //Modifico la barra superior
@@ -113,20 +104,6 @@ fun HomeScreen(nav: NavController, viewModel: MainScreenViewModel = hiltViewMode
         }
     }
 
-    //region NAVIGATE
-    /*
-    if (NavigationFunctions.changeScreen.value){
-        NavigationFunctions.changeScreen(-1)
-        when(NavigationFunctions.screenID.value){
-            0 -> {nav.navigate(route = Destinations.Profile.ruta)}
-            1 -> {}
-            2 -> {nav.navigate(route = Destinations.ListScreen.ruta)}
-        }
-    }
-
-     */
-    //endregion
-
     //region LOGOUT
     if (viewModel.logOutnPop){
         NavigatePopLogOut(
@@ -138,9 +115,8 @@ fun HomeScreen(nav: NavController, viewModel: MainScreenViewModel = hiltViewMode
 
 }
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
-fun HomeBody(nav:NavController,viewModel: MainScreenViewModel = hiltViewModel()){
+fun HomeBody(nav:NavController,viewModel: HomeScreenViewModel = hiltViewModel()){
 
     Column(Modifier.background(LightBlack)) {
 
@@ -150,199 +126,76 @@ fun HomeBody(nav:NavController,viewModel: MainScreenViewModel = hiltViewModel())
 
             item {
 
-                //region PRIMER LAZY ROW
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(30.dp)
-                        .padding(start = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Juegos Nuevos",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-                }
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(DeviceConfig.heightPercentage(32))
+                //Lazy Row
+                if (viewModel.gameList.isNotEmpty()) GameLazyRow(title = "Juegos Nuevos", nav = nav, gameList = viewModel.gameList.subList(0,10))
 
-                ) {
-                    LazyRow(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(5.dp)
-                    ) {
+                //Banners
+                if (viewModel.bannerList.isNotEmpty()) BannerPager(nav = nav)
 
-                        item {
-                            Row() {
-                                if (viewModel.gameList.isNotEmpty()) {
-                                    for (i in 0 until 10) {
-                                        val game = viewModel.gameList[i]
-                                        Surface(elevation = 15.dp) {
-                                            GameBox(nav, game.id, game.name, game.imageURL)
-                                        }
-                                        Spacer(modifier = Modifier.width(10.dp))
-                                    }
-                                }
+                //Segunda Lazy Row
+                if (viewModel.gameList.isNotEmpty()) GameLazyRow(title = "Próximos lanzamientos", nav = nav, gameList = viewModel.gameList.subList(10,20))
 
-                            }
-                        }
+                //Tercera Lazy Row
+                if (viewModel.gameList.isNotEmpty()) GameLazyRow(title = "Recomendados", nav = nav, gameList = viewModel.recommendedList)
 
-                    }
-                }
-                //endregion
-
-                //region BANNERS
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(DeviceConfig.heightPercentage(40))
-                        .background(Color(0xFF131313))
-
-                ) {
-
-                    LazyRow(
-                        Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        item {
-
-                            Column(
-                                modifier = Modifier
-                                    .fillParentMaxSize()
-                                    .background(Color.Transparent)
-                            ) {
-
-                                if (viewModel.bannerList.isNotEmpty()) {
-                                    HorizontalPager(count = 3) { page ->
-                                        Image(
-                                            modifier = Modifier
-                                                .padding(top = 20.dp, bottom = 20.dp)
-                                                .fillMaxSize()
-                                                .clickable {
-                                                    if (viewModel.clickable) {
-                                                        nav.navigate("${Destinations.Pantalla3.ruta}/${viewModel.bannerList[page].gameID}")
-                                                        viewModel.updatePendingValues()
-                                                    }
-                                                },
-                                            painter = rememberAsyncImagePainter(viewModel.bannerList[page].imageURL),
-                                            contentDescription = null,
-                                            contentScale = ContentScale.Crop
-                                        )
-
-                                    }
-                                }
-
-                            }
-
-
-                        }
-
-                    }
-                }
-                //endregion
-
-                //region SEGUNDA LAZY ROW
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(30.dp)
-                        .padding(start = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Próximos lanzamientos",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-                }
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(DeviceConfig.heightPercentage(32))
-
-                ) {
-
-                    LazyRow(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(8.dp)
-                    ) {
-                        item {
-                            Row() {
-                                if (viewModel.gameList.isNotEmpty()) {
-                                    for (i in 10 until 20) {
-                                        val game = viewModel.gameList[i]
-                                        Surface(elevation = 15.dp) {
-                                            GameBox(nav, game.id, game.name, game.imageURL)
-                                        }
-                                        Spacer(modifier = Modifier.width(10.dp))
-                                    }
-                                }
-
-                            }
-                        }
-
-                    }
-                }
-                //endregion
-
-                //region TERCERA FILA
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(30.dp)
-                        .padding(start = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Tus recomendados",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-                }
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(DeviceConfig.heightPercentage(32))
-
-                ) {
-
-                    LazyRow(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(8.dp)
-                    ) {
-                        item {
-                            Row() {
-                                if (viewModel.gameList.isNotEmpty()) {
-                                    for (i in 0 until viewModel.recommendedList.size) {
-                                        val game = viewModel.recommendedList[i]
-                                        Surface(elevation = 15.dp) {
-                                            GameBox(nav, game.id, game.name, game.imageURL)
-                                        }
-                                        Spacer(modifier = Modifier.width(10.dp))
-                                    }
-                                }
-
-                            }
-                        }
-
-                    }
-                }
-                //endregion
-
-                //Esto suma espacio abajo para subir el ultimo LazyRow ya que lo cubre el bottombar
+                //Esto suma espacio abajo para subir el ultimo LazyRow ya que lo cubre el BottomBar
                 Spacer(Modifier.height(50.dp))
             }
 
         }
     }
 
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun BannerPager(nav: NavController, viewModel: HomeScreenViewModel = hiltViewModel()) {
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .height(DeviceConfig.heightPercentage(40))
+            .background(Color(0xFF131313))
+
+    ) {
+
+        LazyRow(
+            Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            item {
+
+                Column(
+                    modifier = Modifier
+                        .fillParentMaxSize()
+                        .background(Color.Transparent)
+                ) {
+
+                    if (viewModel.bannerList.isNotEmpty()) {
+                        HorizontalPager(count = 3) { page ->
+                            Image(
+                                modifier = Modifier
+                                    .padding(top = 20.dp, bottom = 20.dp)
+                                    .fillMaxSize()
+                                    .clickable {
+                                        if (viewModel.clickable) {
+                                            nav.navigate("${Destinations.Pantalla3.ruta}/${viewModel.bannerList[page].gameID}")
+                                            viewModel.updatePendingValues()
+                                        }
+                                    },
+                                painter = rememberAsyncImagePainter(viewModel.bannerList[page].imageURL),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop
+                            )
+
+                        }
+                    }
+
+                }
+
+
+            }
+
+        }
+    }
 }

@@ -1,7 +1,6 @@
 package com.example.vili.Screens.Body.MyList
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -11,16 +10,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.vili.Common.Complex.BottomBar
 import com.example.vili.Common.Complex.BottomBarClass
 import com.example.vili.Common.Composables.BackPressHandler
 import com.example.vili.R
-import com.example.vili.Screens.Body.Home.MainScreenViewModel
+import com.example.vili.Screens.Body.Home.HomeScreenViewModel
 import com.google.accompanist.pager.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -45,7 +42,7 @@ fun GameList(uid:String,navController: NavController, viewModel: GameListViewMod
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun GameListBody(uid: String,navController:NavController, viewModel: GameListViewModel = hiltViewModel(), MainScreenViewModel: MainScreenViewModel = hiltViewModel()){
+fun GameListBody(uid: String, navController:NavController, viewModel: GameListViewModel = hiltViewModel(), HomeScreenViewModel: HomeScreenViewModel = hiltViewModel()){
     systemBarColor(color = Color.Black)
 
     //Con la UID proporcionada por parámetro lanzo la query para obtener las listas
@@ -103,15 +100,30 @@ fun GameListBody(uid: String,navController:NavController, viewModel: GameListVie
 
         HorizontalPager(count = 2,state = pagerState) { page ->
 
-            when(page){
+            when (page) {
 
-                0 -> {viewModel.updateTabData(0); LazyList(navController, userGameList = viewModel.userGameList, isUserGameListB = true)  }
-                1 -> {viewModel.updateTabData(1); LazyList(navController, gameList = viewModel.userPlanningList, isGameListB = true) }
+                0 -> {
+                    viewModel.updateTabData(0);
+
+                    UserGameLazyList(navController, "", viewModel.userGameList);
+
+
+                }
+
+                1 -> {
+                    viewModel.updateTabData(1); GameLazyList(
+                        navController,
+                        "",
+                        gameList = viewModel.userPlanningList
+                    );
+                }
 
             }
 
         }
 
+        //Espacio para el BottomBar
+        Spacer(modifier = Modifier.height(50.dp))
     }
 
     }

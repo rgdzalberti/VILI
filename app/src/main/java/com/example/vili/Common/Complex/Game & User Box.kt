@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.vili.Common.Complex.GameBoxViewModel
+import com.example.vili.myApp.theme.LightBlack
 
 @Composable
 fun GameBox(
@@ -25,22 +26,22 @@ fun GameBox(
     titulo: String = "",
     imageURL: String = "",
     Rating: Int = 0,
-    invisible: Boolean = false,
     viewModel: GameBoxViewModel = hiltViewModel()
 ) {
 
     var rating = ""
     repeat(Rating) { rating += "★" }
 
-    var modTitle = if (titulo.length >= 17) {"${titulo.subSequence(0,15)}..."} else titulo
+    var modTitle = if (titulo.length >= 17) {
+        "${titulo.subSequence(0, 15)}..."
+    } else titulo
 
     Box(
         modifier = Modifier
-            .background(if (invisible) Color.Transparent else Color.Black)
+            .background(Color.Black)
             .height(DeviceConfig.heightPercentage(30))
             .width(DeviceConfig.widthPercentage(40))
-            .alpha(if (invisible) 0f else 1f)
-        ,
+            .alpha(1f),
         contentAlignment = Alignment.BottomCenter
     ) {
 
@@ -54,22 +55,20 @@ fun GameBox(
         }
 
         //Imagen - Si esta invisible no se muestra para evitar el click null
-        if (!invisible) {
-            Image(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable
-                    {
-                        if (viewModel.clickable) {
-                            nav.navigate("${Destinations.Pantalla3.ruta}/${key}")
-                            viewModel.updatePendingValues()
-                        }
-                    },
-                painter = rememberAsyncImagePainter(imageURL),
-                contentDescription = null,
-                contentScale = ContentScale.Crop
-            )
-        }
+        Image(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable
+                {
+                    if (viewModel.clickable) {
+                        nav.navigate("${Destinations.Pantalla3.ruta}/${key}")
+                        viewModel.updatePendingValues()
+                    }
+                },
+            painter = rememberAsyncImagePainter(imageURL),
+            contentDescription = null,
+            contentScale = ContentScale.Crop
+        )
 
 
         //Columna semitransparente con el nombre y puntuación
@@ -98,3 +97,38 @@ fun GameBox(
 
 
 }
+
+@Composable
+fun UserBox(nav:NavController,url: String, name: String, id:String) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .clickable { nav.navigate(route = "${Destinations.Profile.ruta}/${id}") }) {
+        Image(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(LightBlack),
+            painter = rememberAsyncImagePainter(model = url),
+            contentDescription = "User PFP",
+            contentScale = ContentScale.FillBounds
+        )
+
+
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .background(Color(0x860A0A0A))
+                .align(Alignment.BottomStart)
+        ) {
+            Text(
+                modifier = Modifier.padding(5.dp),
+                text = name,
+                maxLines = 1,
+                color = Color.White
+            )
+        }
+
+    }
+}
+

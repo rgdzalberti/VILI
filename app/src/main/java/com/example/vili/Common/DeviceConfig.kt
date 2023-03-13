@@ -66,7 +66,6 @@ class DeviceConfig(){
         }
 
         fun dpToPx(initDP: Dp):Float{
-            //return ((initDP.toString().substringBefore('.').toFloat()) * (dpi / 160)).toInt()
             return (initDP.toString().substringBefore('.').toFloat() * (dpi / DisplayMetrics.DENSITY_DEFAULT))
         }
 

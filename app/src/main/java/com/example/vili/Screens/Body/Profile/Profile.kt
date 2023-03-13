@@ -1,6 +1,8 @@
 package com.example.vili.Screens.Body.Profile
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothClass.Device
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -10,9 +12,9 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -20,8 +22,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -36,10 +41,9 @@ import com.example.vili.Common.Composables.SearchMenu
 import com.example.vili.Common.Composables.SettingsMenu
 import com.example.vili.Common.Composables.TopBar
 import com.example.vili.Model.Querys.FBAuth
-import com.example.vili.Screens.Body.Home.MainScreenViewModel
-import com.example.vili.myApp.theme.LightBlack
-import com.example.vili.myApp.theme.LightBlack2
-import com.example.vili.myApp.theme.ObscureBlack
+import com.example.vili.R
+import com.example.vili.Screens.Body.Home.HomeScreenViewModel
+import com.example.vili.myApp.theme.*
 import viliApp.Destinations
 import viliApp.DeviceConfig
 import viliApp.NavigationFunctions
@@ -51,9 +55,10 @@ import viliApp.systemBarColor
 fun Profile(
     profileID: String,
     nav: NavController,
-    MainScreenViewModel: MainScreenViewModel = hiltViewModel(), viewModel: ProfileViewModel = hiltViewModel()
+    HomeScreenViewModel: HomeScreenViewModel = hiltViewModel(), viewModel: ProfileViewModel = hiltViewModel()
 ) {
 
+    //Actualizo los datos 1 sola vez (La vez que se genera la pantalla)
     LaunchedEffect(Unit){
         viewModel.updateData(profileID)
     }
@@ -74,8 +79,8 @@ fun Profile(
 
         ) {
             TopBar(
-                switchSettings = { MainScreenViewModel.switchSettings() },
-                switchSearch = { MainScreenViewModel.switchSearch() },
+                switchSettings = { HomeScreenViewModel.switchSettings() },
+                switchSearch = { HomeScreenViewModel.switchSearch() },
                 nav = nav
             )
 
@@ -85,7 +90,7 @@ fun Profile(
 
             //region SUBMENU SEARCH
             AnimatedVisibility(
-                visible = MainScreenViewModel.enableSearchMenu,
+                visible = HomeScreenViewModel.enableSearchMenu,
                 enter = slideInHorizontally(
                     initialOffsetX = { fullWidth -> +fullWidth }, animationSpec = tween(
                         durationMillis = 500, easing = LinearOutSlowInEasing
@@ -99,11 +104,11 @@ fun Profile(
             ) {
                 //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
                 //Sino que este menú se vuelva a plegar
-                BackPressHandler(MainScreenViewModel::searchBackPressed)
+                BackPressHandler(HomeScreenViewModel::searchBackPressed)
                 SearchMenu(
-                    MainScreenViewModel.searchText,
-                    MainScreenViewModel::onSearchTextChange,
-                    MainScreenViewModel.gameList,
+                    HomeScreenViewModel.searchText,
+                    HomeScreenViewModel::onSearchTextChange,
+                    HomeScreenViewModel.gameList,
                     nav
                 )
             }
@@ -111,7 +116,7 @@ fun Profile(
 
             //region SUBMENU SETTINGS
             AnimatedVisibility(
-                visible = MainScreenViewModel.enableSettingsMenu,
+                visible = HomeScreenViewModel.enableSettingsMenu,
                 enter = slideInHorizontally(
                     initialOffsetX = { fullWidth -> -fullWidth }, animationSpec = tween(
                         durationMillis = 300, easing = LinearOutSlowInEasing
@@ -125,10 +130,10 @@ fun Profile(
             ) {
                 //Si estoy en esta pantalla cuando le doy al botón de atrás no quiero cambiar de pantalla
                 //Sino que este menú se vuelva a plegar
-                BackPressHandler(MainScreenViewModel::settingsBackPressed)
+                BackPressHandler(HomeScreenViewModel::settingsBackPressed)
                 SettingsMenu(
-                    MainScreenViewModel::logOut,
-                    MainScreenViewModel::switchSettings
+                    HomeScreenViewModel::logOut,
+                    HomeScreenViewModel::switchSettings
                 )
             }
 
@@ -147,9 +152,8 @@ fun Profile(
     //endregion
 
 
-    //TODO se puede mover LOGOUT?
     //region LOGOUT
-    if (MainScreenViewModel.logOutnPop) {
+    if (HomeScreenViewModel.logOutnPop) {
         NavigationFunctions.NavigatePopLogOut(
             navController = nav,
             destination = Destinations.Pantalla1.ruta
@@ -172,16 +176,15 @@ fun ProfileBody(
             .background(LightBlack)
     ) {
 
-
-
-
         //region Banner
         Row(
             Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.15f)
-                .background(Color.Gray)
+                .background(Color.White)
         ) {
+            Box() {
+
             Image(
                 painter = rememberAsyncImagePainter(viewModel.bannerURL),
                 contentDescription = "User banner picture",
@@ -196,6 +199,9 @@ fun ProfileBody(
                     },
                 contentScale = ContentScale.Crop
             )
+                Divider(color = Color.White, thickness = 3.dp, modifier = Modifier.align(Alignment.BottomEnd))
+            }
+
         }
         //endregion
 
@@ -260,9 +266,14 @@ fun ProfileBody(
                     .fillMaxSize()
                     .weight(0.5f)
                     .padding(5.dp)
-                    .background(LightBlack2, RoundedCornerShape(10.dp)),
-                contentAlignment = Alignment.Center
-                    ) {
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                RedGradient1, RedGradient2
+                            )
+                        ), RoundedCornerShape(10.dp)
+                    ), contentAlignment = Alignment.Center
+            ) {
                 Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = viewModel.playedGames.toString(), color = Color.White, textAlign = TextAlign.Center, fontSize = 40.sp, fontWeight = FontWeight.Bold)
                     Text(text = "Juegos Jugados", color = Color.White, textAlign = TextAlign.Center, fontSize = 15.sp, fontWeight = FontWeight.Bold)
@@ -274,7 +285,13 @@ fun ProfileBody(
                     .fillMaxSize()
                     .weight(0.5f)
                     .padding(5.dp)
-                    .background(LightBlack2, RoundedCornerShape(10.dp)),
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                RedGradient2, RedGradient1
+                            )
+                        ), RoundedCornerShape(10.dp)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -285,13 +302,29 @@ fun ProfileBody(
         }
         //endregion
 
+        //region Descripcion
+        Column(Modifier.padding(5.dp)) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.5f)
+                    .background(LightBlack2, RoundedCornerShape(10.dp))
+                    .padding(10.dp)) {
+                Text(
+                    text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                )
+            }
+        }
+        //endregion
 
         //region navigate List
         Column(Modifier.padding(5.dp)) {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.25f)
+                    .fillMaxHeight(0.40f)
                     .background(LightBlack2, RoundedCornerShape(10.dp))
                     .padding(5.dp)
                     .clickable {
@@ -307,11 +340,13 @@ fun ProfileBody(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.listprofile), "", tint = Color.White, modifier = Modifier.size(40.dp))
+                Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "VISITAR  LISTA",
+                    text = "Check List",
                     color = Color.White,
                     textAlign = TextAlign.Center,
-                    fontSize = 40.sp,
+                    fontSize = 30.sp,
                     fontWeight = FontWeight.Bold
                 )
             }

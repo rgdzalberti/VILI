@@ -127,7 +127,7 @@ fun SearchMenu(searchText: String, onValueChange: (String) -> Unit, gameList: Li
             HorizontalPager(count = 2,state = pagerState) { page ->
 
                 when(page){
-                    0 -> {TabDataSearch.updateTabData(0); LazyList(nav, searchText, gameList = gameList, isGameListB = true)  }
+                    0 -> {TabDataSearch.updateTabData(0); GameLazyList(nav, searchText, gameList = gameList)  }
                     1 -> {TabDataSearch.updateTabData(1)
 
                         UserLazyList(nav,searchText,userList)

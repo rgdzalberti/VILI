@@ -1,7 +1,5 @@
 package viliApp
 
-import android.content.Context
-import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,7 +49,7 @@ fun PreviewLoginScreen() {
 }
 
 @Composable
-fun LoginScreen(navController: NavController, viewModel : LoginViewModel = hiltViewModel()) {
+fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltViewModel()) {
 
     var isLogging by remember { mutableStateOf(true) }
 
@@ -60,25 +58,21 @@ fun LoginScreen(navController: NavController, viewModel : LoginViewModel = hiltV
     getDeviceConfig()
 
     //Si el ViewModel recibe la orden de cambiar de pantalla aquí se cumple
-    if (viewModel.popNContinue){
+    if (viewModel.popNContinue) {
         viewModel.popNContinue = false
         NavigatePop(navController = navController, destination = Destinations.MainScreen.ruta)
     }
 
-    //Everything Container
     Column(
         Modifier
             .fillMaxSize()
-            //.background(Color(0xFF0A0A0A))
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(Color(0xFF0A0A0A), Color(0xFF181717)),
                 )
             ), horizontalAlignment = Alignment.CenterHorizontally
-
     ) {
-        //LOGO
-
+        //region LOGO
         Column(
             modifier = Modifier
                 .height(heightPercentage(40))
@@ -88,7 +82,9 @@ fun LoginScreen(navController: NavController, viewModel : LoginViewModel = hiltV
         ) {
             Logo()
         }
+        //endregion
 
+        //region TextFields
         Column(
             Modifier
                 .height(
@@ -102,24 +98,66 @@ fun LoginScreen(navController: NavController, viewModel : LoginViewModel = hiltV
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            //CAMPOS TEXT
             Column(
                 Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                ////////////////
 
-                LoginFields(isLogging, { isLogging = !isLogging },viewModel.email,viewModel.password,viewModel.repeatPassword,viewModel::onEmailChange,viewModel::onPasswordChange,viewModel::onRepeatPasswordChange, navController,viewModel::turnPopNContinue)
+                EmailTextField(value = viewModel.email, onValueChange = viewModel::onEmailChange)
+                PasswordTextField(
+                    value = viewModel.password, onValueChange = viewModel::onPasswordChange
+                )
+                if (!isLogging) {
+                    ConfirmPasswordTextField(
+                        viewModel.repeatPassword, viewModel::onRepeatPasswordChange
+                    )
+                }
+                Spacer(Modifier.height(heightPercentage(3)))
+                validateButton(
+                    navController,
+                    isLogging,
+                    viewModel.email,
+                    viewModel.password,
+                    viewModel::turnPopNContinue
+                )
+                ClickableText(isLogging, {isLogging = !isLogging})
 
 
             }
 
         }
+        //endregion
 
 
     }
+
+}
+
+
+@Composable
+fun LoginFields(
+    isLogging: Boolean,
+    toggleLogin: () -> Unit,
+    email: String,
+    password: String,
+    repeatPassword: String,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onRepeatPasswordChange: (String) -> Unit,
+    nav: NavController,
+    turnPopNContinue: () -> Unit
+) {
+    EmailTextField(email, onEmailChange)
+    PasswordTextField(password, onPasswordChange)
+    if (!isLogging) {
+        ConfirmPasswordTextField(repeatPassword, onRepeatPasswordChange)
+    }
+    Spacer(Modifier.height(heightPercentage(3)))
+    validateButton(nav, isLogging, email, password, turnPopNContinue)
+    ClickableText(isLogging, toggleLogin)
+
 
 }
 
@@ -133,41 +171,27 @@ fun Logo() {
     //Cuando la pantalla carga le digo que lance las animaciones
     LaunchedEffect(Unit) { startAnimation = true }
 
-    AnimatedVisibility(visible = startAnimation,
+    AnimatedVisibility(
+        visible = startAnimation,
         enter = slideInVertically(initialOffsetY = { -40 }) + expandVertically(
             expandFrom = Alignment.Top
         ) + scaleIn(
             transformOrigin = TransformOrigin(0.5f, 0f)
         ) + fadeIn(initialAlpha = 0.3f),
-        exit = fadeOut()) {
+        exit = fadeOut()
+    ) {
         Image(painter = image, contentDescription = "logo")
     }
 
 
 }
 
-
 @Composable
-fun LoginFields(isLogging: Boolean, toggleLogin: () -> Unit, email:String, password:String, repeatPassword:String, onEmailChange: (String) -> Unit, onPasswordChange: (String) -> Unit, onRepeatPasswordChange: (String) -> Unit, nav: NavController,turnPopNContinue:()->Unit) {
-    EmailTextField(email,onEmailChange)
-    PasswordTextField(password,onPasswordChange)
-    if (!isLogging) {
-        ConfirmPasswordTextField(repeatPassword,onRepeatPasswordChange)
-    }
-    Spacer(Modifier.height(heightPercentage(3)))
-    validateButton(nav,isLogging,email,password,turnPopNContinue)
-    ClickableText(isLogging, toggleLogin)
+fun EmailTextField(value: String, onValueChange: (String) -> Unit) {
 
-
-}
-
-@Composable
-fun EmailTextField(uiState: String, onValueChange: (String) -> Unit) {
-
-    Column()
-    {
+    Column() {
         OutlinedTextField(
-            value = uiState,
+            value = value,
             maxLines = 1,
             modifier = Modifier.padding(horizontal = 25.dp),
             singleLine = true,
@@ -196,24 +220,22 @@ fun EmailTextField(uiState: String, onValueChange: (String) -> Unit) {
             )
     }
 }
+
 @Composable
-fun PasswordTextField(uiState: String, onValueChange: (String) -> Unit) {
+fun PasswordTextField(value: String, onValueChange: (String) -> Unit) {
     Column(
         modifier = Modifier.padding(horizontal = 25.dp),
 
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
     ) {
         var password by rememberSaveable { mutableStateOf("") }
         var passwordVisibility by remember { mutableStateOf(false) }
 
-        val icon = if (passwordVisibility)
-            painterResource(id = R.drawable.view)
-        else
-            painterResource(id = R.drawable.hide)
+        val icon = if (passwordVisibility) painterResource(id = R.drawable.view)
+        else painterResource(id = R.drawable.hide)
 
         OutlinedTextField(
-            value = uiState,
+            value = value,
             maxLines = 1,
             singleLine = true,
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -242,9 +264,7 @@ fun PasswordTextField(uiState: String, onValueChange: (String) -> Unit) {
                     passwordVisibility = !passwordVisibility
                 }) {
                     Icon(
-                        painter = icon,
-                        tint = Color.White,
-                        contentDescription = "Visibility Icon"
+                        painter = icon, tint = Color.White, contentDescription = "Visibility Icon"
                     )
                 }
             },
@@ -256,21 +276,19 @@ fun PasswordTextField(uiState: String, onValueChange: (String) -> Unit) {
         )
     }
 }
+
 @Composable
 fun ConfirmPasswordTextField(text: String, onValueChange: (String) -> Unit) {
     Column(
         modifier = Modifier.padding(horizontal = 25.dp),
 
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
     ) {
         var password by rememberSaveable { mutableStateOf("") }
         var passwordVisibility by remember { mutableStateOf(false) }
 
-        val icon = if (passwordVisibility)
-            painterResource(id = R.drawable.view)
-        else
-            painterResource(id = R.drawable.hide)
+        val icon = if (passwordVisibility) painterResource(id = R.drawable.view)
+        else painterResource(id = R.drawable.hide)
 
         OutlinedTextField(
             value = text,
@@ -302,9 +320,7 @@ fun ConfirmPasswordTextField(text: String, onValueChange: (String) -> Unit) {
                     passwordVisibility = !passwordVisibility
                 }) {
                     Icon(
-                        painter = icon,
-                        tint = Color.White,
-                        contentDescription = "Visibility Icon"
+                        painter = icon, tint = Color.White, contentDescription = "Visibility Icon"
                     )
                 }
             },
@@ -316,13 +332,20 @@ fun ConfirmPasswordTextField(text: String, onValueChange: (String) -> Unit) {
         )
     }
 }
+
 @Composable
-fun validateButton(nav: NavController,isLogging: Boolean, email:String,password: String, turnPopNContinue:()->Unit ) {
+fun validateButton(
+    nav: NavController,
+    isLogging: Boolean,
+    email: String,
+    password: String,
+    turnPopNContinue: () -> Unit
+) {
 
     val context = LocalContext.current
 
     Button(
-        onClick ={
+        onClick = {
 
             when (isLogging) {
                 true -> {
@@ -342,8 +365,7 @@ fun validateButton(nav: NavController,isLogging: Boolean, email:String,password:
                 }
             }
 
-        },
-        colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+        }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
     ) {
 
         Text(
@@ -351,8 +373,7 @@ fun validateButton(nav: NavController,isLogging: Boolean, email:String,password:
                 "Iniciar Sesión"
             } else {
                 "Registrar"
-            }),
-            color = Color.Black
+            }), color = Color.Black
         )
     }
 }
@@ -370,6 +391,7 @@ fun ClickableText(isLogging: Boolean, toggleLogin: () -> Unit) {
         modifier = Modifier.clickable(onClick = { toggleLogin() })
     )
 }
+
 
 
 

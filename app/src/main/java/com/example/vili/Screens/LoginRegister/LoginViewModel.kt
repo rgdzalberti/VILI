@@ -2,7 +2,10 @@ package viliApp
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.saveable
@@ -18,6 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle) : ViewModel() {
+
+    var isLogging by savedStateHandle.saveable { mutableStateOf(true) }
 
     var email by savedStateHandle.saveable { mutableStateOf("") }
     var password by savedStateHandle.saveable { mutableStateOf("") }

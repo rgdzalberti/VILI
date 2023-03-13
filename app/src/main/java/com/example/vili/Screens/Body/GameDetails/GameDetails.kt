@@ -1,5 +1,6 @@
 package com.example.vili.Screens.Body.GameDetails
 
+import android.bluetooth.BluetoothClass.Device
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,6 +26,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.vili.R
+import com.example.vili.myApp.theme.BackgroundDescription
+import com.example.vili.myApp.theme.ObscureBlack
 import viliApp.DeviceConfig
 
 @Composable
@@ -88,43 +91,24 @@ fun GameDetails(gameID: String,navController: NavController, viewModel: GameDeta
             //endregion
 
             //region PORTADA Y TEXTO DERECHA
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF161616))
-                    .height(DeviceConfig.heightPercentage(30))
-            ) {
-                Portada(viewModel)
+            Box(Modifier.height(DeviceConfig.heightPercentage(32))) {
 
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(
-                        Modifier.matchParentSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(start = 3.dp, end = 3.dp),
-                            text = viewModel.gameData.name,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = viewModel.gameData.releaseDate,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
-                        )
-                        Spacer(modifier = Modifier.padding(top = 5.dp))
-                        if (viewModel.gameData.avgDuration.isNotBlank()) {
-                            GenreBox(genre = "${viewModel.gameData.avgDuration} Horas", Color.Black)
-
-                        }
-                    }
+                Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .weight(0.5f, false)
+                    )
+                    Box(
+                        Modifier
+                            .background(BackgroundDescription)
+                            .weight(1f, false)
+                            .fillMaxSize()
+                            )
                 }
-
+                PortadaYTexto()
             }
+
             //endregion
 
             //region BODY
@@ -143,17 +127,35 @@ fun GameDetails(gameID: String,navController: NavController, viewModel: GameDeta
                 Column(
                     Modifier
                         .height(IntrinsicSize.Min)
-                        .fillMaxWidth(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .fillMaxWidth(1f)
+                        .padding(10.dp)
                 ) {
 
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Text(
+                        modifier = Modifier.padding(start = 6.dp),
+                        text = "DESCRIPCIÓN",
+                        color = Color.White,
+                        fontSize = 25.sp,
+                        textAlign = TextAlign.Start,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Row(
+                        Modifier
+                            .height(3.dp)
+                            .background(Color.Red, RoundedCornerShape(5.dp))
+                            .fillMaxWidth(0.7f)
+                            .padding(start = 2.dp)
+                    ) { Text("a") }
                     Spacer(modifier = Modifier.height(10.dp))
+
 
                     Row(
                         modifier = Modifier
                             .fillMaxHeight()
                             .fillMaxWidth()
-                            .background(Color.Transparent)
+                            .background(BackgroundDescription, RoundedCornerShape(10.dp))
                     ) {
                         Text(
                             modifier = Modifier.padding(5.dp),
@@ -166,6 +168,24 @@ fun GameDetails(gameID: String,navController: NavController, viewModel: GameDeta
                 //endregion
 
                 //region GENEROS
+                Column(Modifier.padding(start = 10.dp)) {
+                    Text(
+                        modifier = Modifier.padding(start = 6.dp),
+                        text = "GÉNEROS",
+                        color = Color.White,
+                        fontSize = 25.sp,
+                        textAlign = TextAlign.Start,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Row(
+                        Modifier
+                            .height(2.dp)
+                            .background(Color.Red, RoundedCornerShape(5.dp))
+                            .fillMaxWidth(0.7f)
+                            .padding(start = 2.dp)
+                    ) { Text("a") }
+                }
+
                 Spacer(modifier = Modifier.height(20.dp))
                 LazyRow {
                     viewModel.listaGenres.forEach {
@@ -207,7 +227,6 @@ fun GameDetails(gameID: String,navController: NavController, viewModel: GameDeta
 @Composable
 fun Portada(viewModel: GameDetailsViewModel) {
 
-
     Box(
         modifier = Modifier
             .height(220.dp)
@@ -215,14 +234,16 @@ fun Portada(viewModel: GameDetailsViewModel) {
             .padding(5.dp)
             .background(Color.Transparent)
     ) {
-        Image(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(10.dp)),
-            painter = rememberAsyncImagePainter(viewModel.gameData.imageURL),
-            contentDescription = null,
-            contentScale = ContentScale.Crop
-        )
+        Surface(elevation = 20.dp, color = Color.Transparent) {
+            Image(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(10.dp)),
+                painter = rememberAsyncImagePainter(viewModel.gameData.imageURL),
+                contentDescription = null,
+                contentScale = ContentScale.Crop
+            )
+        }
     }
 
 
@@ -479,4 +500,44 @@ fun ratingStars(currentIndex: Int, updateStars: (Int) -> Unit) {
 }
 
 
+@Composable
+fun PortadaYTexto(viewModel:GameDetailsViewModel= hiltViewModel()){
+    Row(
+        Modifier
+            .fillMaxWidth()
+            //.background(Color(0xFF161616))
+            .padding(start = 5.dp, top = 5.dp)
+            .height(DeviceConfig.heightPercentage(30))
+    ) {
+        Portada(viewModel)
 
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(
+                Modifier.matchParentSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    modifier = Modifier.padding(start = 3.dp, end = 3.dp, top = 35.dp),
+                    text = viewModel.gameData.name,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = viewModel.gameData.releaseDate,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
+                Spacer(modifier = Modifier.padding(top = 5.dp))
+                if (viewModel.gameData.avgDuration.isNotBlank()) {
+                    GenreBox(genre = "${viewModel.gameData.avgDuration} Horas", Color.Black)
+
+                }
+            }
+        }
+
+    }
+}

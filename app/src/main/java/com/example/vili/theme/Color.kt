@@ -11,3 +11,7 @@ val LightBlack = Color(0xFF181818)
 val LightBlack2 = Color(0xFF0A0A0A)
 val ObscureBlack = Color(0xFF030303)
 val LightRed = Color(0xFFD0312D)
+val RedGradient1 = Color(0xFF312020)
+val RedGradient2 = Color(0xFF421717)
+val BackgroundDescription = Color(0xFF222429)
+

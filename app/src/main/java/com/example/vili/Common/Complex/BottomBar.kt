@@ -1,6 +1,5 @@
 package com.example.vili.Common.Complex
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -26,11 +25,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.vili.Model.Querys.FBAuth
 import com.example.vili.R
-import com.example.vili.Screens.Body.Home.MainScreenViewModel
+import com.example.vili.Screens.Body.Home.HomeScreenViewModel
 import viliApp.Destinations
 
 @Composable
-fun BottomBar(navController: NavController,viewModel: MainScreenViewModel = hiltViewModel()) {
+fun BottomBar(navController: NavController,viewModel: HomeScreenViewModel = hiltViewModel()) {
 
     AnimatedVisibility(
         visible = BottomBarClass.showBar.value, enter = slideInVertically(
