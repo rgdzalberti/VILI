@@ -28,7 +28,6 @@ import com.example.vili.Model.Querys.FBAuth
 import com.example.vili.R
 import com.example.vili.Screens.Body.Home.MainScreenViewModel
 import viliApp.Destinations
-import viliApp.NavigationFunctions
 
 @Composable
 fun BottomBar(navController: NavController,viewModel: MainScreenViewModel = hiltViewModel()) {

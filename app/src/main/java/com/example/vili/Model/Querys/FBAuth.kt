@@ -33,7 +33,7 @@ class FBAuth {
                     }
                     //Si no devuelve errores da un mensaje de éxito y pasa a la siguiente pantalla
                     .addOnSuccessListener { task ->
-                        Toast.makeText(context, "Logeado con éxito", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Logueado con éxito", Toast.LENGTH_SHORT).show()
                         callback(true)
                     }
             } catch (error: Exception) {
@@ -79,6 +79,10 @@ class FBAuth {
             return Firebase.auth.currentUser?.email
         }
         //endregion
+
+        fun updateUserUID(uid:String){
+            UID.value = uid
+        }
 
 
     }

@@ -1,6 +1,7 @@
 package viliApp
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,6 +38,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.vili.Model.Querys.FBAuth
 import com.example.vili.R
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import viliApp.DeviceConfig.Companion.heightPercentage
 import viliApp.NavigationFunctions.Companion.NavigatePop
 
@@ -325,6 +328,7 @@ fun validateButton(nav: NavController,isLogging: Boolean, email:String,password:
                 true -> {
                     FBAuth.onLogIn(email, password, context) { success ->
                         if (success) {
+                            FBAuth.updateUserUID(Firebase.auth.uid.toString())
                             turnPopNContinue()
                         }
                     }
