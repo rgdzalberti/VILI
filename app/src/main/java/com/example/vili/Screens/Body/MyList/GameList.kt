@@ -1,6 +1,7 @@
 package com.example.vili.Screens.Body.MyList
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -210,6 +211,8 @@ fun TopBarList(dropDown: (Int) -> Unit, nav:NavController, page:Int, navigate:()
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun DropDownSort(sortList: (Int) -> Unit, page: Int) {
+
+    Log.i("wawa",page.toString())
 
     var listItems = emptyList<String>()
 
