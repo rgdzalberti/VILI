@@ -1,5 +1,5 @@
 # Bienvenido a VILI
-![Logo VILI](https://imgur.com/z6SsxYZ.png)
+![Logo VILI](https://imgur.com/a/NjRPtlL)
 
 ## ¿Qué es VILI?
 
