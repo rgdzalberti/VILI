@@ -359,6 +359,7 @@ fun validateButton(
                 false -> {
                     FBAuth.onSignUp(email, password, context) { success ->
                         if (success) {
+                            FBAuth.updateUserUID(Firebase.auth.uid.toString())
                             turnPopNContinue()
                         }
                     }
